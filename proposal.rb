@@ -12,7 +12,7 @@ SuperRole.configure do |config|
   config.raise_exception_if_pending_update_exists = true
   config.role_class = Role
   config.permission_class = Permission
-  config.role_permission_relationship_class = RolePermissionRelationship
+  config.resource_permission_class = ResourcePermission
 end
 
 SuperRole.define_permissions do
@@ -94,29 +94,29 @@ Organization.permissions(exclude_children: true)
 @role = @organization.roles.first
 
 # Can this role update its organization?
-@role.has_permission?(:update, @organization) #=> true
+@role.can?(:update, @organization) #=> true
 
 # Can this role destroy its organization?
-@role.has_permission?(:destroy, @organization) #=> true
+@role.can?(:destroy, @organization) #=> true
 
 # Since delete and remove is an alias of destroy, this always return the same result
 # as above
-@role.has_permission?(:delete, @organization) #=> true
-@role.has_permission?(:remove, @organization) #=> true
+@role.can?(:delete, @organization) #=> true
+@role.can?(:remove, @organization) #=> true
 
 # Since edit is an alias of update, this always return the same result
 # as above
-@role.has_permission?(:edit, @organization) #=> true
+@role.can?(:edit, @organization) #=> true
 
 # Can this role create any project?
-@role.has_permission?(:create, Project) #=> false
+@role.can?(:create, Project) #=> false
 
 # Can this role create project in another organization?
-@role.has_permission?(:create, Project.new(organization_id: 999)) #=> false
+@role.can?(:create, Project.new(organization_id: 999)) #=> false
 
 # Can this role create project in this organization
-@role.has_permission?(:create, @organization.project.build) #=> true
+@role.can?(:create, @organization.project.build) #=> true
 
 # We can also check against a permission group
-@role.has_permission?(:manage, @organization) #=> true
+@role.can?(:manage, @organization) #=> true
 
