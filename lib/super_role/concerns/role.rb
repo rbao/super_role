@@ -14,8 +14,8 @@ module SuperRole
       
       if group
         actions_to_check = group.permissions
-      elsif actions_alias
-        actions_to_check = [actions_alias.real_action]
+      elsif action_alias
+        actions_to_check = [action_alias.real_action]
       else
         actions_to_check = [action]
       end
