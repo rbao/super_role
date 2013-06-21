@@ -1,5 +1,6 @@
 module SuperRole
   class RoleOwnerDefinition
+
     def self.run(&block)
       new.instance_eval(&block)
     end
@@ -15,5 +16,6 @@ module SuperRole
     def children(classes, options = {})
       
     end
+    
   end
 end

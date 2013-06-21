@@ -18,11 +18,13 @@ end
 SuperRole.define_permissions do
   
   # Add [:create, :update, :destroy, :show] permissions for both Organizatnion and Contact
+  # Also add :new as alias for :create, :edit as alias for :update
   permissions_for [Project, Contact]
 
   # Add [:create, :update, :destroy, :show, :show_dashboard] permissions for Organization
   permissions_for Organization, extra: [:show_dashboard] do
     group :manage, [:create, :update, :destroy]
+    alias_permission [:delete, :remove], to: :destroy
   end
   
   # Add :update permissions for OrganizationSetting and OrganizationProfile
@@ -93,6 +95,18 @@ Organization.permissions(exclude_children: true)
 
 # Can this role update its organization?
 @role.has_permission?(:update, @organization) #=> true
+
+# Can this role destroy its organization?
+@role.has_permission?(:destroy, @organization) #=> true
+
+# Since delete and remove is an alias of destroy, this always return the same result
+# as above
+@role.has_permission?(:delete, @organization) #=> true
+@role.has_permission?(:remove, @organization) #=> true
+
+# Since edit is an alias of update, this always return the same result
+# as above
+@role.has_permission?(:edit, @organization) #=> true
 
 # Can this role create any project?
 @role.has_permission?(:create, Project) #=> false

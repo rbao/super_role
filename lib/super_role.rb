@@ -3,6 +3,7 @@ require "super_role/permission_definition"
 require "super_role/role_owner_definition"
 
 module SuperRole
+  
   def self.configure
     
   end
