@@ -9,11 +9,15 @@ module SuperRole
   end
 
   def self.define_permissions(&block)
-    PermissionDefinition.run(&block)
+    PermissionDefinitions.run(&block)
+  end
+
+  def self.define_permission_hierarchy(&block)
+    PermissionHierarchyDefinitions.run(&block)
   end
 
   def self.define_role_owners(&block)
-    RoleOwnerDefinition.run(&block)
+    RoleOwnerDefinitions.run(&block)
   end
 
 end

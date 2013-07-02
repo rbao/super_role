@@ -1,9 +1,9 @@
-# role
-# - Name
-# permission
+# roles
+# - name
+# permissions
 # - action
 # - resource_type
-# role_permission_relationships
+# resource_permissions
 # - role_id
 # - permission_id
 # - resource_id
@@ -19,31 +19,23 @@ SuperRole.define_permissions do
   
   # Add [:create, :update, :destroy, :show] permissions for both Organizatnion and Contact
   # Also add :new as alias for :create, :edit as alias for :update
-  permissions_for [Project, Contact]
+  define_permissions_for [Project, Contact, Government]
 
   # Add [:create, :update, :destroy, :show, :show_dashboard] permissions for Organization
-  permissions_for Organization, extra: [:show_dashboard] do
-    group :manage, [:create, :update, :destroy]
-    alias_permission [:delete, :remove], to: :destroy
+  define_permissions_for Organization, extras: [:show_dashboard] do
+    group :manage, [:update, :destroy]
+    alias_action [:delete, :remove], to: :destroy
   end
   
   # Add :update permissions for OrganizationSetting and OrganizationProfile
-  permissions_for [OrganizationSetting, OrganizationProfile], only: [:update]
-
+  define_permissions_for [OrganizationSetting, OrganizationProfile], only: [:update]
 end
 
-SuperRole.define_role_owners do
-  
-  # Role that does not have any owner can have permissions for everything
-  root do
-    children :all
-  end
+SuperRole.define_permissions_hierarchy do
 
-  # A role can belongs_to organization, and can have all its permission except for create.
-  # A has_many :roles will also be injected to the Organization class.
-  owner Organization do
-    # A role that is owned by an organization can also have permissions for these children
-    # object, an instance of the following object are considered to be a child of an 
+  parent Organization do
+    # A role that can have permissions for organization can also have permissions for its
+    # children. An instance of the following object are considered to be a child of an 
     # organization if its organization_id equals to organization.id. For example a role for
     # an organization can have permission to create an OrganizationProfile only
     # if the OrganizationProfile's organization_id equals organization.id.
@@ -54,15 +46,49 @@ SuperRole.define_role_owners do
     # be consider as a child of the organization
     children OrganizationSetting, foreign_key: :org_id
 
-    # An organization's role can have permissions on any project it owns, but not anything else 
-    # the project role can have. If shallow is false or not specified, an organization role can have
-    # every permission a project role can have as defined further below. 
+    # An organization's role can have permissions on any project it owns, but not on any of project's
+    # children. This mean the role can have :edit, :update, :destroy permissions for an project, but 
+    # not for the project's ProjectSetting. If shallow is set to false or not specified, the organization's
+    # role will be able to have permissions for project's ProjectSetting and any other children a project
+    # have.
     children Project, shallow: true
   end
 
-  owner Project do
+  parent Contact do
+    children [ContactProfile]
+  end
+
+  parent Project do
     children [ProjectProfile, ProjectSetting, ProjectUserRelationship]
   end
+
+end
+
+SuperRole.define_role_owners do
+  
+  # Role can have no owner, and they will be considered as the root role.
+  owner :root do
+    # Root role can have all permissions.
+    can_have_permissions_for :all
+  end
+
+  # A role can belongs_to an instance of Organization, and it can have all of its permissions including
+  # its children's permissions except for [:create, Organization]. If no block is given, it will
+  # automatically add its own permissions to it. This is the same as writing:
+  # owner Organization do
+  #   can_have_permissions_for Organization, except: [:create]
+  # end
+  owner Organization
+
+  owner Project
+
+  # A role can belongs_to an instance of Government and it can have all permissions for organization including any of
+  # organization's children.
+  owner Government do
+    can_have_permissions_for Government, only: :update
+    can_have_permissions_for Organization
+  end
+
 end
 
 # An app define its classes and gets SuperRole functaionlity by including concerns.
@@ -96,6 +122,10 @@ Organization.permissions(exclude_children: true)
 # Can this role update its organization?
 @role.can?(:update, @organization) #=> true
 
+# Since edit is an alias of update, this always return the same result
+# as above
+@role.can?(:edit, @organization) #=> true
+
 # Can this role destroy its organization?
 @role.can?(:destroy, @organization) #=> true
 
@@ -103,10 +133,6 @@ Organization.permissions(exclude_children: true)
 # as above
 @role.can?(:delete, @organization) #=> true
 @role.can?(:remove, @organization) #=> true
-
-# Since edit is an alias of update, this always return the same result
-# as above
-@role.can?(:edit, @organization) #=> true
 
 # Can this role create any project?
 @role.can?(:create, Project) #=> false
@@ -120,3 +146,8 @@ Organization.permissions(exclude_children: true)
 # We can also check against a permission group
 @role.can?(:manage, @organization) #=> true
 
+# Since we used the shallow: true options for projects, we will not be able
+# to edit an project's project_setting
+@role.can?(:edit, @organization.projects.first.project_setting) #=> false
+
+@rooe.can?(:edit, @organization.contacts.first.contact_profile) #=> true
