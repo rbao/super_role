@@ -7,12 +7,12 @@ module SuperRole
     end
 
     def ==(other_object)
-      other_object.class == self.class && other_object._state == _state
+      other_object.class == self.class && other_object.state == state
     end
     alias_method :eql?, :==
 
     protected
-      def _state
+      def state
         [action, resource_type]
       end
   end
