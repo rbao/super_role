@@ -1,13 +1,13 @@
 module SuperRole
-  class PermissionDefinitions
+  class PermissionDefiner
 
     attr_accessor :definitions
 
     def self.run(&block)
-      definitions = new
-      definitions.instance_eval(&block)
-      definitions.add_new_permissions!
-      definitions.warn_undefined_permissions
+      definer = new
+      definer.instance_eval(&block)
+      definer.run_definitions!
+      definer.warn_undefined_permissions
     end
 
     def initialize
@@ -43,7 +43,7 @@ module SuperRole
       actions
     end
 
-    def add_new_permissions!
+    def run_definitions!
       new_permissions = permissions_defined - existing_permissions
       new_permissions.each do { |p| p.save! }
     end
