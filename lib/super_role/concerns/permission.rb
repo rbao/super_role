@@ -13,7 +13,7 @@ module SuperRole
 
     protected
       def state
-        [action, resource_type]
+        [action.to_s, resource_type.to_s]
       end
   end
 end

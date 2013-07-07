@@ -6,12 +6,12 @@ describe SuperRole::Permission do
     let(:permission1) { Permission.new(action: 'create', resource_type: 'Project') }
     let(:permission2) { Permission.new(action: 'create', resource_type: 'Project') }
 
-    it 'should return true iff the other permission have the same action and resource_type' do
-      should be_true
+    context 'when the other permission have the same action and resource_type' do
+      it { should be_true }
     end
 
-    it 'should be consider included in an array which have a permission with the same action and resource_type' do
-      [permission1].should include(permission2)
+    context 'when the other permission have the same action and resource_type is in an array' do
+      it('should be considered included in that array') { [permission1].should include(permission2) }
     end
   end
 
@@ -20,12 +20,12 @@ describe SuperRole::Permission do
     let(:permission1) { Permission.new(action: 'create', resource_type: 'Project') }
     let(:permission2) { Permission.new(action: 'create', resource_type: 'Project') }
 
-    it 'should return true iff the other permission have the same action and resource_type' do
-      should be_true
+    context 'when the other permission have the same action and resource_type' do
+      it { should be_true }
     end
 
-    it 'should make array subtraction work' do
-      ([permission1] - [permission2]).should eq []
+    context 'when subtracting two array where each of the array have a permission with the same action and resource_type' do
+      it { ([permission1] - [permission2]).should eq [] }
     end
   end
 end

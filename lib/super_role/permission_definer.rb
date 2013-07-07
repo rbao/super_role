@@ -1,5 +1,14 @@
 module SuperRole
+  
+  # - This class provides the top level DSL methods for permission definition file.
+  # ex. {SuperRole::PermissionDefiner#define_permissions_for define_permission_for}
+  #
+  # - This class is also responsible for adding, updating the database to make sure
+  # the permissions that exist in the database is consistent with the definition
+  # file. 
   class PermissionDefiner
+
+    include DslNormalizationHelper
 
     attr_accessor :definitions
 
@@ -7,48 +16,53 @@ module SuperRole
       definer = new
       definer.instance_eval(&block)
       definer.run_definitions!
-      definer.warn_undefined_permissions
+      definer.warn_undefined_permissions if definer.undefined_permissions.any?
     end
 
     def initialize
       @definitions = []
     end
 
-    def default_permissions
-      [:create, :show, :update, :destroy]
+    def default_actions
+      ['create', 'show', 'update', 'destroy']
     end
 
-    def define_permissions_for(classes, options = {}, &block)
-      classes = Array(classes)
-      action_list = extract_actions_from_options(options)
-      definition = PermissionDefinition.new(classes)
+    # @note This is a DSL method used in the permission definition file.
+    # Create an instance of SuperRole::PermissionDefinition according
+    # to the given block (DSL), then add it to the definitions array
+    # for later processing.
+    def define_permissions_for(resource_types, options = {}, &block)
+      resource_types = arrayify_then_stringify_items(resource_types)
+      action_array = extract_actions_from_options(options)
+      definition = PermissionDefinition.new(resource_types)
       
       definition.instance_eval do
-        actions action_list
-        alias_action :new, to: :create if action_list.include?(:create)
-        alias_action :edit, to: :update if action_list.include?(:update)
+        actions action_array
+        action_alias :new, to: :create if action_array.include?('create')
+        action_alias :edit, to: :update if action_array.include?('update')
       end
 
-      definition.instance_eval(&block)
+      definition.instance_eval(&block) if block_given?
       definitions << definition
     end
 
     def extract_actions_from_options(options)
-      extras = Array(options[:extras])
-      only = Array(options[:only])
-      except = Array(options[:except])
+      extra = arrayify_then_stringify_items(options[:extra])
+      only = arrayify_then_stringify_items(options[:only])
+      except = arrayify_then_stringify_items(options[:except])
 
       actions = only.any? ? only : default_actions
-      actions = actions - except
+      actions -= except
+      actions += extra
       actions
     end
 
     def run_definitions!
-      new_permissions = permissions_defined - existing_permissions
-      new_permissions.each do { |p| p.save! }
+      new_permissions = defined_permissions - existing_permissions
+      new_permissions.each { |p| p.save! }
     end
 
-    def permissions_defined
+    def defined_permissions
       permissions = []
       definitions.each do |d|
         permissions += d.permissions
@@ -57,7 +71,7 @@ module SuperRole
     end
 
     def undefined_permissions
-      existing_permissions - permissions_defined
+      existing_permissions - defined_permissions
     end
 
     def warn_undefined_permissions
@@ -71,7 +85,7 @@ module SuperRole
     end
 
     def existing_permissions
-      SuperRole.permissions_class.all
+      SuperRole.permission_class.all
     end
 
   end

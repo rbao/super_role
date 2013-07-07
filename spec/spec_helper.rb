@@ -2,16 +2,16 @@ require 'super_role'
 require 'support/super_role_config'
 require 'support/active_record'
 require 'support/mock_models'
-
-
-
-
+require 'pry-debugger'
 
 # Rspec Config
 RSpec.configure do |config|
 
-  # Run example in transaction
+  
   config.around do |example|
+    SuperRole::ActionGroup.destroy_all
+
+    # Run example in transaction
     ActiveRecord::Base.transaction do
       example.run
       raise ActiveRecord::Rollback

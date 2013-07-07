@@ -9,11 +9,11 @@ module SuperRole
     def can?(action, resource)
       resource_type = resource.class == Class ? resource : resource.class
 
-      group = PermissionGroup.find(action, resource_type)
-      action_alias = PermissionAlias.find(action, resource_type)
+      group = ActionGroup.find(action, resource_type)
+      action_alias = ActionAlias.find(action, resource_type)
       
       if group
-        actions_to_check = group.permissions
+        actions_to_check = group.actions
       elsif action_alias
         actions_to_check = [action_alias.real_action]
       else

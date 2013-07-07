@@ -1,18 +1,26 @@
 module SuperRole
   class PermissionDefinition
 
-    attr_reader :classes, :defined_permissions
+    include DslNormalizationHelper
 
-    def initialize(classes)
-      @classes = classes
-      @defined_permissions = []
+    attr_reader :resource_types, :permissions
+
+    def initialize(resource_types)
+      @resource_types = resource_types
+      @permissions = []
     end
 
-    def group(group_name, actions)
-      
+    # Add a action group.
+    # @param [String, Symbol] name The action group name.
+    # @param [Array<String, Symbol>] actions The actions in the group.
+    def action_group(name, actions)
+      name = name.to_s
+      actions = arrayify_then_stringify_items(actions)
+
+      ActionGroup.create(name, actions, resource_types)
     end
 
-    def alias_action(alias_names, options)
+    def action_alias(alias_names, options)
       
     end
 
@@ -20,19 +28,13 @@ module SuperRole
       actions.each do |a|
         define_action(a)
       end
-
-      defined_permission_ids = define_permis
     end
 
     private
       def define_action(action)
-        classes.each do |c|
-          defined_permissions << SuperRole.permission_class.find_or_create_by(resource_type: c, action: action)
+        resource_types.each do |rt|
+          permissions << SuperRole.permission_class.new(resource_type: rt, action: action)
         end
-      end
-
-      def destroy_undefined_permissions
-        
       end
 
   end
