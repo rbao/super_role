@@ -5,6 +5,7 @@ module SuperRole
 
     attr_reader :resource_types, :permissions
 
+    # @param [Array<String>] resource_types
     def initialize(resource_types)
       @resource_types = resource_types
       @permissions = []
@@ -20,8 +21,11 @@ module SuperRole
       ActionGroup.create(name, actions, resource_types)
     end
 
-    def action_alias(alias_names, options)
-      
+    def action_alias(aliases, action)
+      aliases = arrayify_then_stringify_items(aliases)
+      action = action.to_s
+
+      ActionAlias.create(aliases, action, resource_types)
     end
 
     def actions(actions)

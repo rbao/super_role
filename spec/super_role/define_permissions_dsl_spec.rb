@@ -78,26 +78,32 @@ describe 'DSL for SuperRole.define_permissions' do
 
   end
   
-  describe 'multiple line definition' do
+  describe 'multi-line definition' do
     
     describe 'with action_group' do
-      before do
+      it 'should creat the new ActionGroup instance' do
         SuperRole.define_permissions do
           define_permissions_for [Project, Contact] do
             action_group :manage, [:update, :destroy]
           end
         end
-      end
-
-      it 'should add in the default permissions' do
-        project_permissions.map(&:action).should match_array default_actions
-        contact_permissions.map(&:action).should match_array default_actions
-      end
-
-      it 'should add in the action_group' do
         SuperRole::ActionGroup.find(:manage, Project).actions.should match_array ['update', 'destroy']
+        SuperRole::ActionGroup.find('manage', 'Contact').actions.should match_array ['update', 'destroy']
       end
     end
+
+    describe 'with action_alias' do
+      it 'should creat the new ActionAlias instance' do
+        SuperRole.define_permissions do
+          define_permissions_for [Project, Contact] do
+            action_alias [:delete, :remove], :destroy
+          end
+        end
+        SuperRole::ActionAlias.find(:destroy, Project).aliases.should match_array ['delete', 'remove']
+        SuperRole::ActionAlias.find('destroy', 'Contact').aliases.should match_array ['delete', 'remove']
+      end
+    end
+
   end
 
 end

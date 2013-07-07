@@ -1,8 +1,6 @@
 require 'active_record'
 require 'active_support/core_ext/module/attribute_accessors'
 
-
-
 module SuperRole
   
   mattr_accessor :resource_permission_class
@@ -36,6 +34,7 @@ end
 require 'super_role/concerns/dsl_normalization_helper'
 require 'super_role/concerns/permission'
 require 'super_role/action_group'
+require 'super_role/action_alias'
 require 'super_role/permission_definition'
 require 'super_role/role_owner_definition'
 require 'super_role/permission_definer'

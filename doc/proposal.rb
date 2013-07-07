@@ -24,7 +24,7 @@ SuperRole.define_permissions do
   # Add [:create, :update, :destroy, :show, :show_dashboard] permissions for Organization
   define_permissions_for Organization, extras: [:show_dashboard] do
     action_group :manage, [:update, :destroy]
-    action_alias [:delete, :remove], to: :destroy
+    action_alias [:delete, :remove], :destroy
   end
   
   # Add :update permissions for OrganizationSetting and OrganizationProfile
