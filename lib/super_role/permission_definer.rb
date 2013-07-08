@@ -15,6 +15,8 @@ module SuperRole
     def self.run(&block)
       definer = new
       definer.instance_eval(&block)
+      ActionGroup.all.freeze
+      ActionAlias.all.freeze
       definer.run_definitions!
       definer.warn_undefined_permissions if definer.undefined_permissions.any?
     end
@@ -38,8 +40,8 @@ module SuperRole
       
       definition.instance_eval do
         actions action_array
-        action_alias :new, to: :create if action_array.include?('create')
-        action_alias :edit, to: :update if action_array.include?('update')
+        action_alias :new, :create if action_array.include?('create')
+        action_alias :edit, :update if action_array.include?('update')
       end
 
       definition.instance_eval(&block) if block_given?

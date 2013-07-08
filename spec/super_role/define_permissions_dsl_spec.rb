@@ -87,6 +87,7 @@ describe 'DSL for SuperRole.define_permissions' do
             action_group :manage, [:update, :destroy]
           end
         end
+        
         SuperRole::ActionGroup.find(:manage, Project).actions.should match_array ['update', 'destroy']
         SuperRole::ActionGroup.find('manage', 'Contact').actions.should match_array ['update', 'destroy']
       end
@@ -99,6 +100,7 @@ describe 'DSL for SuperRole.define_permissions' do
             action_alias [:delete, :remove], :destroy
           end
         end
+
         SuperRole::ActionAlias.find(:destroy, Project).aliases.should match_array ['delete', 'remove']
         SuperRole::ActionAlias.find('destroy', 'Contact').aliases.should match_array ['delete', 'remove']
       end
