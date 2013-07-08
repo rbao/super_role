@@ -1,7 +1,7 @@
 module SuperRole
   class ActionAlias
 
-    cattr_accessor :all
+    cattr_reader :all
     @@all = []
 
     attr_reader :action, :resource_type
@@ -13,7 +13,7 @@ module SuperRole
         if existing
           existing.aliases = existing.aliases | aliases
         else
-          self.all << ActionAlias.new(aliases, action, rt)
+          @@all << ActionAlias.new(aliases, action, rt)
         end
       end
       nil
@@ -38,7 +38,7 @@ module SuperRole
     # @note This method is only used for testing purposes.
     # Destroy all instance of ActionAlias.
     def self.destroy_all
-      self.all = []
+      @@all = []
     end
 
     ## Instance Methods ##

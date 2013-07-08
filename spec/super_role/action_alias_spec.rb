@@ -12,7 +12,7 @@ describe SuperRole::ActionAlias do
         expect do
           SuperRole::ActionAlias.create(['delete', 'remove'], 'destroy', ['Project', 'Contact'])
         end.to change { SuperRole::ActionAlias.count }.by(2)
-        
+
         SuperRole::ActionAlias.find(:destroy, Project).aliases.should match_array ['delete', 'remove']
         SuperRole::ActionAlias.find('destroy', 'Contact').aliases.should match_array ['delete', 'remove']
       end

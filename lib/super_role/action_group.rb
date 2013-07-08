@@ -1,7 +1,7 @@
 module SuperRole
   class ActionGroup
 
-    cattr_accessor :all
+    cattr_reader :all
     @@all = []
 
     attr_reader :name, :resource_type
@@ -19,7 +19,7 @@ module SuperRole
         if existing
           existing.actions = existing.actions | actions
         else
-          self.all << ActionGroup.new(name, actions, rt)
+          @@all << ActionGroup.new(name, actions, rt)
         end
       end
       nil
@@ -44,7 +44,7 @@ module SuperRole
     # @note This method is only used for testing purposes.
     # Destroy all instnace of ActionGroup.
     def self.destroy_all
-      self.all = []
+      @@all = []
     end
 
     ## Instance Methods ##
