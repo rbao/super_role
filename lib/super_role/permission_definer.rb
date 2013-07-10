@@ -17,6 +17,7 @@ module SuperRole
       definer.instance_eval(&block)
       ActionGroup.all.freeze
       ActionAlias.all.freeze
+      
       definer.run_definitions!
       definer.warn_undefined_permissions if definer.undefined_permissions.any?
     end

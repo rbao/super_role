@@ -32,8 +32,11 @@ SuperRole.define_permissions do
 end
 
 SuperRole.define_permissions_hierarchy do
+  node Government do
+    chidlren Organization
+  end
 
-  parent Organization do
+  node Organization do
     # A role that can have permissions for organization can also have permissions for its
     # children. An instance of the following object are considered to be a child of an 
     # organization if its organization_id equals to organization.id. For example a role for
@@ -54,11 +57,11 @@ SuperRole.define_permissions_hierarchy do
     children Project, shallow: true
   end
 
-  parent Contact do
+  node Contact do
     children [ContactProfile]
   end
 
-  parent Project do
+  node Project do
     children [ProjectProfile, ProjectSetting, ProjectUserRelationship]
   end
 
@@ -150,4 +153,22 @@ Organization.permissions(exclude_children: true)
 # to edit an project's project_setting
 @role.can?(:edit, @organization.projects.first.project_setting) #=> false
 
-@rooe.can?(:edit, @organization.contacts.first.contact_profile) #=> true
+@role.can?(:edit, @organization.contacts.first.contact_profile) #=> true
+
+# Can this role be given the permission to create a project?
+@role.can_have_permission?(:create, Project) # => true
+
+# If the role owner is a project then this will return false
+@role.owner = Project.first
+@role.can_have_permission?(:create, Project) # => false
+
+
+@role.owner = Organization.first
+@role.possible_resources_for_permission(:update, Project) #=> [#<Project id:1, organization_id: 1>]
+
+@contact = Organization.first.contacts.first
+@role.possible_resources_for_permission(:update, ContactProfile, resource_chain: [@contact] ) #=>
+
+
+Organization project.org_id ticket.proj_id
+
