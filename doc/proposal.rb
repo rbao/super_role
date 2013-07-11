@@ -148,7 +148,10 @@ Organization.permissions(exclude_children: true)
 
 
 @role.owner = Organization.first
+# Preferrably return an ActiveRecord::Relation
 @role.possible_resources_for_permission(:update, Project) #=> [#<Project id:1, organization_id: 1>]
+# or maybe?
+Project.possible_for_role(@role, to: :update)
 
 @contact = Organization.first.contacts.first
 @role.possible_resources_for_permission(:update, ContactProfile, resource_chain: [@contact] ) #=>
