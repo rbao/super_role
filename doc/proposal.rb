@@ -31,65 +31,49 @@ SuperRole.define_permissions do
   define_permissions_for [OrganizationSetting, OrganizationProfile], only: [:update]
 end
 
-SuperRole.define_permissions_hierarchy do
-  node Government do
-    chidlren Organization
+SuperRole.define_role_owners do
+  
+  owner :root do
+    node :all
   end
 
-  node Organization do
-    # A role that can have permissions for organization can also have permissions for its
-    # children. An instance of the following object are considered to be a child of an 
-    # organization if its organization_id equals to organization.id. For example a role for
-    # an organization can have permission to create an OrganizationProfile only
-    # if the OrganizationProfile's organization_id equals organization.id.
-    children [OrganizationUserRelationship, OrganizationProfile, Contact]
+  owner Government do
+    node Organization
+  end
+
+  owner Organization do
+
+    # A role that is owned by an organization can also have permissions for its
+    # children node. An instance of the following object are considered to be a child node of an 
+    # organization if its organization_id equals to organization.id. For example an organization role
+    # can have permission to create an OrganizationUserRelationship only
+    # if the OrganizationUserRelationship's organization_id equals organization.id.
+    node [OrganizationUserRelationship, OrganizationFinance]
+
+    # We can also set the :only key. In this case the organization's role can only have permission
+    # for :update OrganizationProfile.
+    node OrganizationProfile, only: :update
 
     # If foreign_key is different, it must be specified here. This means an instance of
     # OrganizationSetting must have its org_id equals to organization.id in order to
     # be consider as a child of the organization
-    children OrganizationSetting, foreign_key: :org_id
+    node OrganizationSetting, foreign_key: :org_id
 
-    # An organization's role can have permissions on any project it owns, but not on any of project's
-    # children. This mean the role can have :edit, :update, :destroy permissions for an project, but 
-    # not for the project's ProjectSetting. If shallow is set to false or not specified, the organization's
-    # role will be able to have permissions for project's ProjectSetting and any other children a project
-    # have.
-    children Project, shallow: true
+    # Children node can be nested. In this case the organization role have permissions on
+    # ContactProfile if ContactProfile's contact_id is in organization.contacts.map(&:id).
+    node Contact do
+      node ContactProfile
+    end
+
+    # We can also provide options for the nested children node
+    node Project do
+      node ProjectUserRelationship
+      node [ProjectProfile, ProjectSetting], only: :update
+    end
   end
 
-  node Contact do
-    children [ContactProfile]
-  end
-
-  node Project do
-    children [ProjectProfile, ProjectSetting, ProjectUserRelationship]
-  end
-
-end
-
-SuperRole.define_role_owners do
-  
-  # Role can have no owner, and they will be considered as the root role.
-  owner :root do
-    # Root role can have all permissions.
-    can_have_permissions_for :all
-  end
-
-  # A role can belongs_to an instance of Organization, and it can have all of its permissions including
-  # its children's permissions except for [:create, Organization]. If no block is given, it will
-  # automatically add its own permissions to it. This is the same as writing:
-  # owner Organization do
-  #   can_have_permissions_for Organization, except: [:create]
-  # end
-  owner Organization
-
-  owner Project
-
-  # A role can belongs_to an instance of Government and it can have all permissions for organization including any of
-  # organization's children.
-  owner Government do
-    can_have_permissions_for Government, only: :update
-    can_have_permissions_for Organization
+  owner Project do
+    node [ProjectProfile, ProjectSetting, ProjectUserRelationship], only: :update
   end
 
 end
