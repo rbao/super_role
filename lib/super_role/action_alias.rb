@@ -9,7 +9,7 @@ module SuperRole
 
     def self.create(aliases, action, resource_types)
       resource_types.each do |rt|
-        existing = find(action, rt)
+        existing = find_by_action(action, rt)
         if existing
           existing.aliases = existing.aliases | aliases
         else
@@ -19,15 +19,22 @@ module SuperRole
       nil
     end
 
-    # @param [String, Symbol] action
-    # @param [Class, String] resource_type
-    # @return [SuperRole::ActionAlias, NilClass] The ActionAlias instance if it is found, nil
-    #   otherwise.
-    def self.find(action, resource_type)
+    def self.find_by_action(action, resource_type)
       action = action.to_s
       resource_type = resource_type.to_s
 
       all.select { |aa| aa.action == action && aa.resource_type == resource_type }.first
+    end
+
+    # @param [String, Symbol] action_alias
+    # @param [Class, String] resource_type
+    # @return [SuperRole::ActionAlias, NilClass] The ActionAlias instance if it is found, nil
+    #   otherwise.
+    def self.find(action_alias, resource_type)
+      action_alias = action_alias.to_s
+      resource_type = resource_type.to_s
+
+      all.select { |aa| aa.aliases.include?(action_alias) }.first
     end
 
     # @return [Integer] The number of action groups created.

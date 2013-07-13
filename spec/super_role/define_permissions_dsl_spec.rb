@@ -101,8 +101,8 @@ describe 'DSL for SuperRole.define_permissions' do
           end
         end
 
-        SuperRole::ActionAlias.find(:destroy, Project).aliases.should match_array ['delete', 'remove']
-        SuperRole::ActionAlias.find('destroy', 'Contact').aliases.should match_array ['delete', 'remove']
+        SuperRole::ActionAlias.find(:delete, Project).action.should eq 'destroy'
+        SuperRole::ActionAlias.find('remove', 'Contact').action.should eq 'destroy'
       end
     end
 
