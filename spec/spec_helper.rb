@@ -11,6 +11,7 @@ RSpec.configure do |config|
   config.around do |example|
     SuperRole::ActionGroup.destroy_all
     SuperRole::ActionAlias.destroy_all
+    SuperRole::RoleOwner.destroy_all
 
     # Run example in transaction
     ActiveRecord::Base.transaction do

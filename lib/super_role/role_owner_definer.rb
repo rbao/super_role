@@ -1,5 +1,5 @@
 module SuperRole
-  module RoleOwnerDefiner
+  class RoleOwnerDefiner
     
     include DslNormalizationHelper
 
@@ -11,7 +11,7 @@ module SuperRole
 
     def owner(resource_type, options = {}, &block)
       role_owner = RoleOwner.create(resource_type, options)
-      role_owner.instance_eval(&block)
+      role_owner.instance_eval(&block) if block_given?
     end
   end
 end

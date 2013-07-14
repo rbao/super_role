@@ -32,21 +32,21 @@ module SuperRole
       permissions.any?
     end
 
-    def can_have_permission?(action, resource_type)
+    def can_have_permission?(permission)
       
     end
 
-    def possible_resources_for_permission(action, resource_type, options = {})
-      return [] unless can_have_permission?(action, resource_type)
+    def possible_resources_for_permission(permission, options = {})
+      return [] unless can_have_permission?(permission)
 
       role_owner = SuperRole::RoleOwner.find(owner_type)
-      node = role_owner.find_node(action, resource_type)
-      node.possible_resources_for_owner(owner)
+      node = role_owner.find_node(permission)
+      node.possible_resources_for_owner_instance(owner)
     end
 
     private
       def owner_type_permitted
-        role_owner = SuperRole::RoleOwner.find_by_owner_type(owner_type)
+        role_owner = SuperRole::RoleOwner.find(owner_type)
         errors.add(:base, 'Owner Invalid') unless role_owner
       end
 

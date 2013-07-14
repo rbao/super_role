@@ -29,8 +29,12 @@ end
 
 require 'super_role/concerns/dsl_normalization_helper'
 require 'super_role/concerns/permission'
+
 require 'super_role/action_group'
 require 'super_role/action_alias'
-require 'super_role/permission_definition'
-require 'super_role/role_owner_definition'
 require 'super_role/permission_definer'
+require 'super_role/permission_definition'
+
+require 'super_role/permission_hierarchy_node'
+require 'super_role/role_owner'
+require 'super_role/role_owner_definer'
