@@ -26,7 +26,7 @@ module SuperRole
     end
 
     def has_permission?(actions, resource)
-      return false if SuperRole::RoleOwner(owner).has_child?(resource)
+      return false unless SuperRole::RoleOwner(owner).owns?(resource)
       actions = Array(actions)
       permissions = resource_permissions.get(actions, resource)
       permissions.any?
@@ -39,15 +39,9 @@ module SuperRole
     def possible_resources_for_permission(action, resource_type, options = {})
       return [] unless can_have_permission?(action, resource_type)
 
-      # TODO: need to figure out a way to implement this for something like
-      # Organization project.org_id ticket.proj_id
-      # where we are looking for possible resource of ticket, but our owner is
-      # Organization.
-      node = SuperRole::PermissionHierarchyNode.find(resource_type)
-      foreign_key = node.foreign_key_for(owner)
-      resource_type.where(foreign_key => owner_id)
-      
-      
+      role_owner = SuperRole::RoleOwner.find(owner_type)
+      node = role_owner.find_node(action, resource_type)
+      node.possible_resources_for_owner(owner)
     end
 
     private

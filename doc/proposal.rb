@@ -34,11 +34,11 @@ end
 SuperRole.define_role_owners do
   
   owner :root do
-    node :all
+    owns :all
   end
 
   owner Government do
-    node Organization
+    owns Organization
   end
 
   owner Organization do
@@ -48,32 +48,32 @@ SuperRole.define_role_owners do
     # organization if its organization_id equals to organization.id. For example an organization role
     # can have permission to create an OrganizationUserRelationship only
     # if the OrganizationUserRelationship's organization_id equals organization.id.
-    node [OrganizationUserRelationship, OrganizationFinance]
+    owns [OrganizationUserRelationship, OrganizationFinance]
 
     # We can also set the :only key. In this case the organization's role can only have permission
     # for :update OrganizationProfile.
-    node OrganizationProfile, only: :update
+    owns OrganizationProfile, only: :update
 
     # If foreign_key is different, it must be specified here. This means an instance of
     # OrganizationSetting must have its org_id equals to organization.id in order to
     # be consider as a child of the organization
-    node OrganizationSetting, foreign_key: :org_id
+    owns OrganizationSetting, foreign_key: :org_id
 
     # Children node can be nested. In this case the organization role have permissions on
     # ContactProfile if ContactProfile's contact_id is in organization.contacts.map(&:id).
-    node Contact do
-      node ContactProfile
+    owns Contact do
+      owns ContactProfile
     end
 
     # We can also provide options for the nested children node
-    node Project do
-      node ProjectUserRelationship
-      node [ProjectProfile, ProjectSetting], only: :update
+    owns Project do
+      owns ProjectUserRelationship
+      owns [ProjectProfile, ProjectSetting], only: :update
     end
   end
 
   owner Project do
-    node [ProjectProfile, ProjectSetting, ProjectUserRelationship], only: :update
+    owns [ProjectProfile, ProjectSetting, ProjectUserRelationship], only: :update
   end
 
 end
