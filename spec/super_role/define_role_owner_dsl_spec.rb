@@ -18,21 +18,17 @@ describe 'DSL for SuperRole.define_role_owner' do
         end 
       end
 
-      it 'should add a role owner with the given resource_type' do
-        expect { subject }.to change { SuperRole::RoleOwner.count }.by(1)
-      end
-
-      it 'should add a role owner which owns all actions of itself' do
-        subject
-        hierarchy_root.permissions.should include(update_organization)
-        hierarchy_root.permissions.should include(show_organization)
-      end
-
-      it 'should add a hierarchy node of itself with no parent and no children' do
+      it 'should add a root node of itself with no parent and no children' do
         subject
         hierarchy_root.resource_type.should eq 'Organization'
         hierarchy_root.parent.should be_nil
         hierarchy_root.children.should eq []
+      end
+
+      it 'should add a root node which owns all actions of itself' do
+        subject
+        hierarchy_root.permissions.should include(update_organization)
+        hierarchy_root.permissions.should include(show_organization)
       end
     end
 
@@ -43,7 +39,21 @@ describe 'DSL for SuperRole.define_role_owner' do
         end
       end
 
-      it 'should only add the specified action of the owner itself' do
+      it 'should add a root node which owns only the specified actions' do
+        subject
+        hierarchy_root.permissions.should include(update_organization)
+        hierarchy_root.permissions.should_not include(show_organization)
+      end
+    end
+
+    context 'with :only options' do
+      subject do
+        SuperRole.define_role_owners do
+          owner 'Organization', except: :show
+        end
+      end
+
+      it 'should add a root node which owns only the specified actions' do
         subject
         hierarchy_root.permissions.should include(update_organization)
         hierarchy_root.permissions.should_not include(show_organization)

@@ -14,7 +14,9 @@ module SuperRole
       
       @node_permissions = []
       actions.each do |action|
-        node_permissions << SuperRole.permission_class.new(action: action, resource_type: resource_type)
+        permission = SuperRole.permission_class.find_by(action: action, resource_type: resource_type)
+        raise "Permission Not Found" unless permission
+        node_permissions << permission
       end
     end
 
