@@ -42,7 +42,7 @@ SuperRole.define_role_owners do
   end
 
   # By default this also implicitly means it owns Organization
-  # If you also provide options to include or exclude certain action
+  # If you can also provide options to include or exclude certain action
   # owner Organization, except: :create
   owner Organization do
 
