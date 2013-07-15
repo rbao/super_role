@@ -50,7 +50,7 @@ module SuperRole
     end
 
     def find_child(permission)
-      return self if permissions.include?(permission)
+      return self if node_permissions.include?(permission)
       
       children.each do |child|
         result = child.find_child(permission)
