@@ -1,12 +1,9 @@
 require 'spec_helper'
 
-class Organization < ActiveRecord::Base; end
-
 describe 'DSL for SuperRole.define_role_owner' do
   
   describe 'one line definition' do
 
-    let(:organization) { Organization.create! }    
     let!(:update_organization) { Permission.create!(action: 'update', resource_type: 'Organization') }
     let!(:show_organization) { Permission.create!(action: 'show', resource_type: 'Organization') }
     let(:hierarchy_root) { SuperRole::RoleOwner.find('Organization').hierarchy_root }

@@ -1,8 +1,9 @@
+require 'pry-debugger'
 require 'super_role'
 require 'support/super_role_config'
 require 'support/active_record'
 require 'support/mock_models'
-require 'pry-debugger'
+
 
 # Rspec Config
 RSpec.configure do |config|

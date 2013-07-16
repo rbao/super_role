@@ -3,17 +3,17 @@ ActiveRecord::Migration.create_table :permissions do |t|
   t.string :resource_type
 end
 
-ActiveRecord::Migration.create_table :organization
+ActiveRecord::Migration.create_table :organizations
 
-ActiveRecord::Migration.create_table :project do |t|
+ActiveRecord::Migration.create_table :projects do |t|
   t.integer :organization_id
 end
 
-ActiveRecord::Migration.create_table :project_profile do |t|
+ActiveRecord::Migration.create_table :project_profiles do |t|
   t.integer :project_id
 end
 
-ActiveRecord::Migration.create_table :ticket do |t|
+ActiveRecord::Migration.create_table :tickets do |t|
   t.integer :proj_id
 end
 
