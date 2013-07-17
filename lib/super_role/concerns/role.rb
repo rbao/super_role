@@ -41,7 +41,7 @@ module SuperRole
 
       role_owner = SuperRole::RoleOwner.find(owner_type)
       node = role_owner.find_node(permission)
-      node.possible_resources_for_owner_instance(owner)
+      node.possible_resources_for_owner_instance(owner, options)
     end
 
     private

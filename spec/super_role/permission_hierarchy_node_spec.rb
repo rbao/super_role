@@ -121,5 +121,11 @@ describe SuperRole::PermissionHierarchyNode do
       should eq grand_child1
     end
   end
+
+  describe '#possible_resource_ids_for_owner_instance' do
+    context 'with no resource chain' do
+      
+    end
+  end
   
 end

@@ -157,7 +157,8 @@ Organization.permissions(exclude_children: true)
 Project.possible_for_role(@role, to: :update)
 
 @contact = Organization.first.contacts.first
-@role.possible_resources_for_permission(:update, ContactProfile, resource_chain: [@contact] ) #=>
+
+@role.possible_resources_for_permission(:update, ContactProfile, scope: { contact_id: [1] } ) #=>
 
 
 Organization project.org_id ticket.proj_id

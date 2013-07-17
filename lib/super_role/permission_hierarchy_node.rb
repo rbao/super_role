@@ -20,19 +20,7 @@ module SuperRole
       end
     end
 
-    def default_actions
-      SuperRole.permission_class.where(resource_type: resource_type).pluck(:action)
-    end
-
-    def actions_according_to_options(options)
-      only = arrayify_then_stringify_items(options[:only])
-      except = arrayify_then_stringify_items(options[:except])
-
-      actions = only.any? ? only : default_actions
-      actions -= except
-      actions
-    end
-
+    # @note This is a DSL method used in the role owner definition file.
     def owns(resource_type, options = {}, &block)
       resource_type = resource_type.to_s
 
@@ -60,16 +48,31 @@ module SuperRole
       nil
     end
 
-    def possible_resources_for_owner_instance(owner)
+    def possible_resources_for_owner_instance(owner, options = {})
       owner unless parent
       possible_parent_resource_ids = parent.possible_resource_ids_for_owner(owner)
       resource_type.constantize.where(parent_foreign_key => possible_parent_resource_ids)
     end
 
-    def possible_resource_ids_for_owner_instance(owner)
+    def possible_resource_ids_for_owner_instance(owner, options = {})
       owner.id unless parent
-      possible_parent_resource_ids = parent.possible_resource_ids_for_owner(owner_id)
+      possible_parent_resource_ids = parent.possible_resource_ids_for_owner(owner_id, options)
       resource_type.constantize.where(parent_foreign_key => possible_parent_resource_ids).pluck(:id)
+    end
+
+    private
+
+    def default_actions
+      SuperRole.permission_class.where(resource_type: resource_type).pluck(:action)
+    end
+
+    def actions_according_to_options(options)
+      only = arrayify_then_stringify_items(options[:only])
+      except = arrayify_then_stringify_items(options[:except])
+
+      actions = only.any? ? only : default_actions
+      actions -= except
+      actions
     end
 
   end

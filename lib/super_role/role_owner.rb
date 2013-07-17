@@ -29,6 +29,7 @@ module SuperRole
       @hierarchy_root = PermissionHierarchyNode.new(resource_type, options)
     end
 
+    # @see SuperRole::PermissionHierarchyNode#owns
     def owns(resource_type, options = {}, &block)
       hierarchy_root.owns(resource_type, options, &block)
     end
