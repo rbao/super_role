@@ -7,6 +7,8 @@
 # - role_id
 # - permission_id
 # - resource_id
+# - reference_id
+# - reference_type
 
 SuperRole.configure do |config|
   config.raise_exception_if_pending_update_exists = true

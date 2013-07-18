@@ -8,8 +8,12 @@ module SuperRole
       validate :owner_type_permitted
     end
 
-    def can?(action, resource)
-      resource_type = resource.class == Class ? resource : resource.class
+    def can?(action, resource_or_resource_type)
+      # Do we really nee this check?
+      return false unless SuperRole::RoleOwner(owner).owns?(resource)
+
+      resource = resourcify(resource_or_resource_type)
+      resource_type = resource_type
 
       group = ActionGroup.find(action, resource_type)
       action_alias = ActionAlias.find(action, resource_type)
@@ -25,11 +29,18 @@ module SuperRole
       has_permission?(actions_to_check, resource)
     end
 
+    def resourcify(resource_or_resource_type)
+      return resource_or_resource_type.new if resource_or_resource_type.class == Class
+      resource_or_resource_type
+    end
+
     def has_permission?(actions, resource)
-      return false unless SuperRole::RoleOwner(owner).owns?(resource)
       actions = Array(actions)
-      permissions = resource_permissions.get(actions, resource)
-      permissions.any?
+      related_resource_permissions = resource_permissions.related_to(actions, resource)
+      
+      related_resource_permissions.each do |rp|
+        return true if rp.include_resource?(resource)
+      end
     end
 
     def can_have_permission?(permission)
