@@ -40,58 +40,58 @@ describe SuperRole::PermissionHierarchyNode do
   end
   
   describe '#owns' do
-    let(:node) { SuperRole::PermissionHierarchyNode.new('Organization') }
+    let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization') }
 
     context 'with no block given' do
       it 'should add the given resource_type as a child node' do
         expect do
-          node.owns('Project')  
-        end.to change { node.children.count }.by(1)
+          organization_node.owns('Project')  
+        end.to change { organization_node.children.count }.by(1)
       end
 
       it 'should create a child node with the given resource_type' do
-        node.owns('Project')
-        node.children.first.resource_type.should eq 'Project'
+        organization_node.owns('Project')
+        organization_node.children.first.resource_type.should eq 'Project'
       end
     end
 
     context 'with a block which creates grand children' do
       it 'should add the given resource_type as children' do
         expect do
-          node.owns('Project') do
+          organization_node.owns('Project') do
             owns('ProjectProfile')
             owns('Ticket')
           end
-        end.to change { node.children.count }.by(1)
+        end.to change { organization_node.children.count }.by(1)
       end
 
       it 'should also add the grand children to the child' do
-        node.owns('Project') do
+        organization_node.owns('Project') do
           owns('ProjectProfile')
           owns('Ticket')
         end
 
-        node.children.first.children.map(&:resource_type).should match_array ['ProjectProfile', 'Ticket']
+        organization_node.children.first.children.map(&:resource_type).should match_array ['ProjectProfile', 'Ticket']
       end
     end
   end
 
   describe '#children_permissions' do
-    subject { node.children_permissions }
+    subject { organization_node.children_permissions }
     
     let!(:show_project) { Permission.create!(action: 'show', resource_type: 'Project') }
     let!(:show_project_profile) { Permission.create!(action: 'show', resource_type: 'ProjectProfile') }
     let!(:show_ticket) { Permission.create!(action: 'show', resource_type: 'Ticket') }
     
-    let(:node) { SuperRole::PermissionHierarchyNode.new('Organization') }
-    let(:child) { SuperRole::PermissionHierarchyNode.new('Project') }
-    let(:grand_child1) { SuperRole::PermissionHierarchyNode.new('ProjectProfile') }
-    let(:grand_child2) { SuperRole::PermissionHierarchyNode.new('Ticket') }
+    let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization') }
+    let(:project_node) { SuperRole::PermissionHierarchyNode.new('Project') }
+    let(:project_profile) { SuperRole::PermissionHierarchyNode.new('ProjectProfile') }
+    let(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket') }
 
     before do
-      child.children << grand_child1
-      child.children << grand_child2
-      node.children << child
+      project_node.children << project_profile
+      project_node.children << ticket_node
+      organization_node.children << project_node
     end
 
     it 'should include all the permissions of the children' do
@@ -100,30 +100,31 @@ describe SuperRole::PermissionHierarchyNode do
   end
 
   describe '#find_child', :focus do
-    subject { node.find_child(show_project_profile) }
+    subject { organization_node.find_child(show_project_profile) }
     
     let!(:show_project) { Permission.create!(action: 'show', resource_type: 'Project') }
     let!(:show_project_profile) { Permission.create!(action: 'show', resource_type: 'ProjectProfile') }
     let!(:show_ticket) { Permission.create!(action: 'show', resource_type: 'Ticket') }
     
-    let(:node) { SuperRole::PermissionHierarchyNode.new('Organization') }
-    let(:child) { SuperRole::PermissionHierarchyNode.new('Project') }
-    let(:grand_child1) { SuperRole::PermissionHierarchyNode.new('ProjectProfile') }
-    let(:grand_child2) { SuperRole::PermissionHierarchyNode.new('Ticket') }
+    let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization') }
+    let(:project_node) { SuperRole::PermissionHierarchyNode.new('Project') }
+    let(:proejct_profile_node) { SuperRole::PermissionHierarchyNode.new('ProjectProfile') }
+    let(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket') }
     
     before do
-      child.children << grand_child1
-      child.children << grand_child2
-      node.children << child
+      project_node.children << proejct_profile_node
+      project_node.children << ticket_node
+      organization_node.children << project_node
     end
 
     it 'should return the child node that have the given permission' do
-      should eq grand_child1
+      should eq proejct_profile_node
     end
   end
 
   describe '#possible_ids_for_ancestor_resource' do
-    
+    subject { ticket_node.possible_ids_for_ancestor_resource(ancestor_resource) }
+
   end
   
 end
