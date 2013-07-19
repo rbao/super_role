@@ -122,10 +122,8 @@ describe SuperRole::PermissionHierarchyNode do
     end
   end
 
-  describe '#possible_resource_ids_for_owner_instance' do
-    context 'with no resource chain' do
-      
-    end
+  describe '#possible_ids_for_ancestor_resource' do
+    
   end
   
 end

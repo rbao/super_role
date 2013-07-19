@@ -1,9 +1,24 @@
+## Required Resources ##
+
 ActiveRecord::Migration.create_table :permissions do |t|
   t.string :action
   t.string :resource_type
 end
 
-ActiveRecord::Migration.create_table :organizations
+class Permission < ActiveRecord::Base
+  include SuperRole::Permission
+end
+
+class ResourcePermission < ActiveRecord::Base
+end
+
+## Mock Models For Testing ##
+
+ActiveRecord::Migration.create_table :government
+
+ActiveRecord::Migration.create_table :organizations do |t|
+  t.integer :government_id
+end
 
 ActiveRecord::Migration.create_table :projects do |t|
   t.integer :organization_id
@@ -17,7 +32,11 @@ ActiveRecord::Migration.create_table :tickets do |t|
   t.integer :proj_id
 end
 
-class Organization < ActiveRecord::Base; end
+class Government < ActiveRecord::Base; end
+
+class Organization < ActiveRecord::Base
+  belongs_to :government
+end
 
 class Project < ActiveRecord::Base
   belongs_to :organization
@@ -31,9 +50,3 @@ class Ticket < ActiveRecord::Base
   belongs_to :project, foreign_key: :proj_id
 end
 
-class Permission < ActiveRecord::Base
-  include SuperRole::Permission
-end
-
-class ResourcePermission < ActiveRecord::Base
-end
