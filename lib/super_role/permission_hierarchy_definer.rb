@@ -9,7 +9,7 @@ module SuperRole
       PermissionHierarchy.all.freeze
     end
 
-    def owner(resource_type, options = {}, &block)
+    def owner_resource_type(resource_type, options = {}, &block)
       role_owner = PermissionHierarchy.create(resource_type, options)
       role_owner.instance_eval(&block) if block_given?
     end

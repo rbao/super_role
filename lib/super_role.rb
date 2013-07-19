@@ -21,8 +21,8 @@ module SuperRole
     PermissionDefiner.run(&block)
   end
 
-  def self.define_role_owners(&block)
-    RoleOwnerDefiner.run(&block)
+  def self.define_role_owner_resource_types(&block)
+    PermissionHierarchyDefiner.run(&block)
   end
 
 end
@@ -36,5 +36,5 @@ require 'super_role/permission_definer'
 require 'super_role/permission_definition'
 
 require 'super_role/permission_hierarchy_node'
-require 'super_role/role_owner'
-require 'super_role/role_owner_definer'
+require 'super_role/permission_hierarchy'
+require 'super_role/permission_hierarchy_definer'

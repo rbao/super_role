@@ -42,9 +42,12 @@ module SuperRole
       root.find_child(permission)
     end
 
-    def resources_match_hierarchy?(resource1, resource2, permission)
+    # @return [Boolean] True if the two resources are related according to permission.
+    #   Two resources are considered belongs_to each other if resource1 belongs to resource2 or
+    #   resource1 belongs_to something that eventually belongs_to resource2.
+    def related_resource?(resource1, resource2, permission)
       node = find_node(permission)
-      node.resource_is_included?(resource1, resource)
+      node.related_resource?(resource1, resource2)
     end
     
   end

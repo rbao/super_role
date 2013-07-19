@@ -48,6 +48,22 @@ module SuperRole
       nil
     end
 
+    def related_resource?(source_resource, target_resource)
+      possible_parent_ids = parent.possible_ids_for_ancestor_resource(target_resource)
+      parent_id = source_resource.send(parent_foreign_key)
+      return if possible_parent_ids.include?(parent_id)
+    end
+
+    def possible_ids_for_ancestor_resource(ancesetor_resource)
+      if ancestor_resource.class == resource_type
+        return [ancestor_resource.id]
+      end
+
+      possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(ancestor_resource)
+      resource_type.constantize.where(parent_foreign_key => possible_parent_ids)
+    end
+
+    #####
     def possible_resources_for_owner_instance(owner, options = {})
       owner unless parent
       possible_parent_resource_ids = parent.possible_resource_ids_for_owner(owner)

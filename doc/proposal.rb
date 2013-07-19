@@ -33,7 +33,7 @@ SuperRole.define_permissions do
   define_permissions_for [OrganizationSetting, OrganizationProfile], only: [:update]
 end
 
-SuperRole.define_role_owner_resource_type do
+SuperRole.define_role_owner_resource_types do
   
   owner_resource_type :root do
     owns :all
