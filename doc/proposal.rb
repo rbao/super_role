@@ -33,20 +33,20 @@ SuperRole.define_permissions do
   define_permissions_for [OrganizationSetting, OrganizationProfile], only: [:update]
 end
 
-SuperRole.define_role_owners do
+SuperRole.define_role_owner_resource_type do
   
-  owner :root do
+  owner_resource_type :root do
     owns :all
   end
 
-  owner Government do
+  owner_resource_type Government do
     owns Organization
   end
 
   # By default this also implicitly means it owns Organization
   # If you can also provide options to include or exclude certain action
   # owner Organization, except: :create
-  owner Organization do
+  owner_resource_type Organization do
 
     # A role that is owned by an organization can also have permissions for its
     # children node. An instance of the following object are considered to be a child node of an 
@@ -77,7 +77,7 @@ SuperRole.define_role_owners do
     end
   end
 
-  owner Project do
+  owner_resource_type Project do
     owns [ProjectProfile, ProjectSetting, ProjectUserRelationship], only: :update
   end
 

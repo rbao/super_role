@@ -28,6 +28,7 @@ module SuperRole
       role.owner_type
     end
 
+    # @param [#persisted?#id] name_and_desc
     def include_resource?(resource)
       if resource.persisted?
         return true if resource.id == resource_id
@@ -35,8 +36,8 @@ module SuperRole
         return false
 
       # Find through heirachy
-      role_owner = SuperRole::RoleOwner(owner_type)
-      role_owner.follows_hierarchy?(reference, resource)
+      hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
+      hierarchy.resource_is_descendant?(resource, reference, permission)
     end
 
   end
