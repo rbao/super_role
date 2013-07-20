@@ -14,7 +14,7 @@ end
 
 ## Mock Models For Testing ##
 
-ActiveRecord::Migration.create_table :government
+ActiveRecord::Migration.create_table :governments
 
 ActiveRecord::Migration.create_table :organizations do |t|
   t.integer :government_id

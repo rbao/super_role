@@ -37,6 +37,23 @@ describe SuperRole::PermissionHierarchyNode do
       end 
     end
 
+    context 'with :parent option' do
+      let(:parent) { SuperRole::PermissionHierarchyNode.new('Government') }
+      let(:options) { { parent: parent} }
+
+      its(:parent) { should eq parent }
+      its(:parent_foreign_key) { should eq 'government_id' }
+    end
+
+    context 'with :foreign_key option' do
+      let(:parent) { SuperRole::PermissionHierarchyNode.new('Government') }
+      let(:options) { { foreign_key: 'g_id'} }
+
+      it 'should set the parent to the given one' do
+        subject.parent_foreign_key.should eq 'g_id'
+      end
+    end
+
   end
   
   describe '#owns' do
@@ -122,8 +139,35 @@ describe SuperRole::PermissionHierarchyNode do
     end
   end
 
-  describe '#possible_ids_for_ancestor_resource' do
+  describe '#possible_ids_for_ancestor_resource', :focus do
     subject { ticket_node.possible_ids_for_ancestor_resource(ancestor_resource) }
+
+    let(:government_node) { SuperRole::PermissionHierarchyNode.new('Government') }
+    let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization', parent: government_node) }
+    let(:project_node) { SuperRole::PermissionHierarchyNode.new('Project', parent: organization_node) }
+    let(:proejct_profile_node) { SuperRole::PermissionHierarchyNode.new('ProjectProfile', parent: project_node) }
+    let(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket', parent: project_node) }
+
+    let!(:government) { Government.create! }
+    let!(:organization1) { Organization.create!(government_id: government.id) }
+    let!(:project1) { Project.create!(organization_id: organization1.id) }
+    let!(:project2) { Project.create!(organization_id: organization1.id) }
+    let!(:project_profile) { ProjectProfile.create!(project_id: project1.id) }
+    let!(:ticket1) { Ticket.create!(proj_id: project1.id) }
+    let!(:ticket12) { Ticket.create!(proj_id: project1.id) }
+    let!(:ticket2) { Ticket.create!(proj_id: project2.id) }
+
+    context 'when given ancestor_resource is the same type of the node it self' do
+      let(:ancestor_resource) { ticket1 }
+      it('should return ancestor_resource.id') { should match_array [ancestor_resource.id] }
+    end
+
+    context 'when given ancestor_resource is the parent of node' do
+      let(:ancestor_resource) { project1 }
+      it 'should return all the resources which belongs_to the ancestor_resource' do
+        should match_array [ticket1.id, ticket12.id]
+      end
+    end
 
   end
   

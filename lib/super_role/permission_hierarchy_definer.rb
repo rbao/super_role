@@ -10,8 +10,8 @@ module SuperRole
     end
 
     def owner_resource_type(resource_type, options = {}, &block)
-      role_owner = PermissionHierarchy.create(resource_type, options)
-      role_owner.instance_eval(&block) if block_given?
+      permission_hierarchy = PermissionHierarchy.create(resource_type, options)
+      permission_hierarchy.instance_eval(&block) if block_given?
     end
   end
 end

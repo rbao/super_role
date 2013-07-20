@@ -8,10 +8,18 @@ module SuperRole
     # @param [String] resource_type
     # @param [Array<String>] actions
     def initialize(resource_type, options = {})
+      @parent = options[:parent]
       @children = []
       @resource_type = resource_type
       @actions = actions_according_to_options(options)
-      
+      @parent_foreign_key = options[:foreign_key]
+
+      if parent && !@parent_foreign_key
+        auto_foreign_key = foreign_key_for(parent.resource_type)
+        @parent_foreign_key ||= auto_foreign_key
+        @parent_foreign_key ||= parent.resource_type.parameterize.underscore + "_id" if parent
+      end
+
       @node_permissions = []
       actions.each do |action|
         permission = SuperRole.permission_class.find_by(action: action, resource_type: resource_type)
@@ -24,7 +32,7 @@ module SuperRole
     def owns(resource_type, options = {}, &block)
       resource_type = resource_type.to_s
 
-      child = PermissionHierarchyNode.new(resource_type, options)
+      child = PermissionHierarchyNode.new(resource_type, options.merge(parent: self))
       child.instance_eval(&block) if block_given?
       children << child
     end
@@ -49,18 +57,17 @@ module SuperRole
     end
 
     def related_resource?(source_resource, target_resource)
-      possible_parent_ids = parent.possible_ids_for_ancestor_resource(target_resource)
-      parent_id = source_resource.send(parent_foreign_key)
-      return if possible_parent_ids.include?(parent_id)
+      possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(target_resource)
+      parent_resource_id = source_resource.send(parent_foreign_key)
+      return if possible_parent_resource_ids.include?(parent_id)
     end
 
-    def possible_ids_for_ancestor_resource(ancesetor_resource)
-      if ancestor_resource.class == resource_type
-        return [ancestor_resource.id]
-      end
+    def possible_ids_for_ancestor_resource(ancestor_resource)
+      return [ancestor_resource.id] if ancestor_resource.class.to_s == resource_type
+      return [] unless parent
 
       possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(ancestor_resource)
-      resource_type.constantize.where(parent_foreign_key => possible_parent_ids)
+      resource_type.constantize.where(parent_foreign_key => possible_parent_resource_ids).pluck(:id)
     end
 
     #####
@@ -89,6 +96,15 @@ module SuperRole
       actions = only.any? ? only : default_actions
       actions -= except
       actions
+    end
+
+    def foreign_key_for(target_resource_type)
+      all_reflections = resource_type.constantize.reflect_on_all_associations(:belongs_to)
+
+      all_reflections.each do |reflection|
+        return reflection.foreign_key if reflection.klass.to_s == target_resource_type
+      end
+      nil
     end
 
   end
