@@ -3,22 +3,19 @@ module SuperRole
     
     include DslNormalizationHelper
 
-    attr_reader :children, :parent, :resource_type, :parent_foreign_key, :actions, :node_permissions
+    attr_reader :children, :parent, :resource_type, :parent_foreign_key, :polymorphic, :actions, :node_permissions
 
     # @param [String] resource_type
     # @param [Array<String>] actions
     def initialize(resource_type, options = {})
+      raise 'You must provide foreign_key if polymorphic is true' if options[:polymorphic] && !options[:foreign_key]
+      
       @parent = options[:parent]
       @children = []
       @resource_type = resource_type
-      @actions = actions_according_to_options(options)
-      @parent_foreign_key = options[:foreign_key]
-
-      if parent && !@parent_foreign_key
-        auto_foreign_key = foreign_key_for(parent.resource_type)
-        @parent_foreign_key ||= auto_foreign_key
-        @parent_foreign_key ||= parent.resource_type.parameterize.underscore + "_id" if parent
-      end
+      @actions = extract_actions_from_options(options)
+      @polymorphic = !!options[:polymorphic]
+      @parent_foreign_key = extract_foreign_key_from_options(options)
 
       @node_permissions = []
       actions.each do |action|
@@ -62,12 +59,12 @@ module SuperRole
       return resource_type.constantize.where(id: ancestor_resource.id) if ancestor_resource.class.to_s == resource_type
       return resource_type.constantize.none unless parent
       # Return all existing ids if the parent node is nil, ie. resource_type is the empty string
-      return resource_type.constantize.all.pluck(:id) if parent.resource_type.blank?
+      return resource_type.constantize.all if parent.resource_type.blank? && ancestor_resource.nil?
+      return resource_type.constantize.none unless parent_foreign_key
 
       possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(ancestor_resource)
       resource_type.constantize.where(parent_foreign_key => possible_parent_resource_ids)
     end
-
 
     def ancestor_resource?(resource, target_resource)
       possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(target_resource)
@@ -84,8 +81,17 @@ module SuperRole
       return [] unless parent
       # If the given ancestore_resource is nil and nil_node exist in the hierarchy then return everything
       return resource_type.constantize.all.pluck(:id) if parent.resource_type.blank? && ancestor_resource.nil?
-      
+      return [] unless parent_foreign_key
+
       possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(ancestor_resource)
+
+      if polymorphic
+        type_column = parent_foreign_key.chomp('id') + 'type'
+        return resource_type.constantize.where(
+          parent_foreign_key => possible_parent_resource_ids, 
+          type_column => parent.resource_type).pluck(:id)
+      end
+
       resource_type.constantize.where(parent_foreign_key => possible_parent_resource_ids).pluck(:id)
     end
 
@@ -95,13 +101,24 @@ module SuperRole
       SuperRole.permission_class.where(resource_type: resource_type).pluck(:action)
     end
 
-    def actions_according_to_options(options)
+    def extract_actions_from_options(options)
       only = arrayify_then_stringify_items(options[:only])
       except = arrayify_then_stringify_items(options[:except])
 
       actions = only.any? ? only : default_actions
       actions -= except
       actions
+    end
+
+    def extract_foreign_key_from_options(options)
+      return if parent && parent.resource_type.blank?
+      return options[:foreign_key].to_s if options[:foreign_key]
+
+      if parent && !options[:foreign_key]
+        auto_foreign_key = foreign_key_for(parent.resource_type)
+        return auto_foreign_key if auto_foreign_key
+        return parent.resource_type.parameterize.underscore + "_id" if parent
+      end
     end
 
     def foreign_key_for(target_resource_type)

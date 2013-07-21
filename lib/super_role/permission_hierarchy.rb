@@ -7,7 +7,9 @@ module SuperRole
     attr_reader :resource_type, :root
 
     def self.create(resource_type, options = {})
-      all << new(resource_type, options)
+      new_instance = new(resource_type, options)
+      all << new_instance
+      new_instance
     end
 
     def self.find(resource_type)
@@ -26,7 +28,7 @@ module SuperRole
 
     def initialize(resource_type, options = {})
       @resource_type = resource_type.to_s
-      @root = PermissionHierarchyNode.new(resource_type, options)
+      @root = PermissionHierarchyNode.new(@resource_type, options)
     end
 
     # @see SuperRole::PermissionHierarchyNode#owns
@@ -45,9 +47,9 @@ module SuperRole
     # @return [Boolean] True if the two resources are related according to permission.
     #   Two resources are considered belongs_to each other if resource1 belongs to resource2 or
     #   resource1 belongs_to something that eventually belongs_to resource2.
-    def related_resource?(resource1, resource2, permission)
+    def ancestor?(resource1, resource2, permission)
       node = find_node(permission)
-      node.related_resource?(resource1, resource2)
+      node.ancestor_resource?(resource1, resource2)
     end
     
   end

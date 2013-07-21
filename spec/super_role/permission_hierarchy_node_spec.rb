@@ -54,6 +54,24 @@ describe SuperRole::PermissionHierarchyNode do
       end
     end
 
+    context 'with :polymorphic option and :foreign_key option' do
+      let(:parent) { SuperRole::PermissionHierarchyNode.new('Organization') }
+      let(:options) { { polymorphic: true, foreign_key: 'owner_id'} }
+
+      it 'should set the polymorphic attribute' do
+        subject.polymorphic.should be_true
+      end
+    end
+
+    context 'with :polymorphic option but no :foreign_key option' do
+      let(:parent) { SuperRole::PermissionHierarchyNode.new('Organization') }
+      let(:options) { { polymorphic: true, foreign_key: 'owner_id'} }
+
+      it 'should raise error' do
+        pending
+      end
+    end
+
   end
   
   describe '#owns' do
@@ -62,33 +80,33 @@ describe SuperRole::PermissionHierarchyNode do
     context 'with no block given' do
       it 'should add the given resource_type as a child node' do
         expect do
-          organization_node.owns('Project')  
+          organization_node.owns('Employee')  
         end.to change { organization_node.children.count }.by(1)
       end
 
       it 'should create a child node with the given resource_type' do
-        organization_node.owns('Project')
-        organization_node.children.first.resource_type.should eq 'Project'
+        organization_node.owns('Employee')
+        organization_node.children.first.resource_type.should eq 'Employee'
       end
     end
 
     context 'with a block which creates grand children' do
       it 'should add the given resource_type as children' do
         expect do
-          organization_node.owns('Project') do
-            owns('ProjectProfile')
-            owns('Ticket')
+          organization_node.owns('Employee') do
+            owns('EmployeeProfile')
+            owns('EmployeeStatus')
           end
         end.to change { organization_node.children.count }.by(1)
       end
 
       it 'should also add the grand children to the child' do
-        organization_node.owns('Project') do
-          owns('ProjectProfile')
-          owns('Ticket')
+        organization_node.owns('Employee') do
+          owns('EmployeeProfile')
+          owns('EmployeeStatus')
         end
 
-        organization_node.children.first.children.map(&:resource_type).should match_array ['ProjectProfile', 'Ticket']
+        organization_node.children.first.children.map(&:resource_type).should match_array ['EmployeeProfile', 'EmployeeStatus']
       end
     end
   end
@@ -240,6 +258,14 @@ describe SuperRole::PermissionHierarchyNode do
       resource does not belongs_to a resource that eventually belongs_to target_resource' do
       let(:resource) { ticket1 }
       let(:target_resource) { government2 }
+
+      it { should be_false }
+    end
+
+    context 'when target_resource is actually a descendant of resource' do
+      subject { project_node.ancestor_resource?(resource, target_resource) }
+      let(:resource) { project1 }
+      let(:target_resource) { ticket1 }
 
       it { should be_false }
     end

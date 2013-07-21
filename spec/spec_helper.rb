@@ -4,6 +4,7 @@ require 'support/super_role_config'
 require 'support/active_record'
 require 'support/mock_models'
 require 'support/mock_hierarchy'
+require 'support/create_permissions'
 
 
 # Rspec Config
