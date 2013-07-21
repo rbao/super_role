@@ -43,18 +43,6 @@ module SuperRole
       end
     end
 
-    def can_have_permission?(permission)
-      
-    end
-
-    def possible_resources_for_permission(permission, options = {})
-      return [] unless can_have_permission?(permission)
-
-      role_owner = SuperRole::RoleOwner.find(owner_type)
-      node = role_owner.find_node(permission)
-      node.possible_resources_for_owner_instance(owner, options)
-    end
-
     private
       def owner_type_permitted
         role_owner = SuperRole::RoleOwner.find(owner_type)

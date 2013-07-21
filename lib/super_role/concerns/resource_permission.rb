@@ -34,6 +34,7 @@ module SuperRole
         return true if resource.id == resource_id
       else
         return false
+      end
 
       # Find through heirachy
       hierarchy = SuperRole::PermissionHierarchy.find(owner_type)

@@ -35,7 +35,7 @@ end
 
 SuperRole.define_role_owner_resource_types do
   
-  owner_resource_type :root do
+  owner_resource_type nil do
     owns :all
   end
 

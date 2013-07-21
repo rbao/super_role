@@ -59,27 +59,28 @@ module SuperRole
     def related_resource?(source_resource, target_resource)
       possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(target_resource)
       parent_resource_id = source_resource.send(parent_foreign_key)
-      return if possible_parent_resource_ids.include?(parent_id)
+      return if possible_parent_resource_ids.include?(parent_resource_id)
     end
 
-    def possible_ids_for_ancestor_resource(ancestor_resource)
-      return [ancestor_resource.id] if ancestor_resource.class.to_s == resource_type
-      return [] unless parent
+    def possible_resources_for_ancestor_resource(ancestor_resource)
+      return resource_type.constantize.where(id: ancestor_resource.id) if ancestor_resource.class.to_s == resource_type
+      return resource_type.constantize.none unless parent
+      # Return all existing ids if the parent node is nil, ie. resource_type is the empty string
+      return resource_type.constantize.all.pluck(:id) if parent.resource_type.blank?
 
       possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(ancestor_resource)
-      resource_type.constantize.where(parent_foreign_key => possible_parent_resource_ids).pluck(:id)
-    end
-
-    #####
-    def possible_resources_for_owner_instance(owner, options = {})
-      owner unless parent
-      possible_parent_resource_ids = parent.possible_resource_ids_for_owner(owner)
       resource_type.constantize.where(parent_foreign_key => possible_parent_resource_ids)
     end
 
-    def possible_resource_ids_for_owner_instance(owner, options = {})
-      owner.id unless parent
-      possible_parent_resource_ids = parent.possible_resource_ids_for_owner(owner_id, options)
+    protected
+
+    def possible_ids_for_ancestor_resource(ancestor_resource)
+      return resource_type.constantize.where(id: ancestor_resource.id).pluck(:id) if ancestor_resource.class.to_s == resource_type
+      return resource_type.constantize.none unless parent
+      # Return all existing ids if the parent node is nil, ie. resource_type is the empty string
+      return resource_type.constantize.all.pluck(:id) if parent.resource_type.blank?
+
+      possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(ancestor_resource)
       resource_type.constantize.where(parent_foreign_key => possible_parent_resource_ids).pluck(:id)
     end
 

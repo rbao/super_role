@@ -139,36 +139,48 @@ describe SuperRole::PermissionHierarchyNode do
     end
   end
 
-  describe '#possible_ids_for_ancestor_resource', :focus do
-    subject { ticket_node.possible_ids_for_ancestor_resource(ancestor_resource) }
+  describe '#possible_resources_for_ancestor_resource' do
+    subject { ticket_node.possible_resources_for_ancestor_resource(ancestor_resource) }
 
-    let(:government_node) { SuperRole::PermissionHierarchyNode.new('Government') }
-    let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization', parent: government_node) }
-    let(:project_node) { SuperRole::PermissionHierarchyNode.new('Project', parent: organization_node) }
-    let(:proejct_profile_node) { SuperRole::PermissionHierarchyNode.new('ProjectProfile', parent: project_node) }
-    let(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket', parent: project_node) }
+    setup_mock_permission_hierarchy
 
-    let!(:government) { Government.create! }
-    let!(:organization1) { Organization.create!(government_id: government.id) }
-    let!(:project1) { Project.create!(organization_id: organization1.id) }
-    let!(:project2) { Project.create!(organization_id: organization1.id) }
-    let!(:project_profile) { ProjectProfile.create!(project_id: project1.id) }
-    let!(:ticket1) { Ticket.create!(proj_id: project1.id) }
-    let!(:ticket12) { Ticket.create!(proj_id: project1.id) }
-    let!(:ticket2) { Ticket.create!(proj_id: project2.id) }
-
-    context 'when given ancestor_resource is the same type of the node it self' do
+    context 'when ancestor_resource is the same type of the node it self' do
       let(:ancestor_resource) { ticket1 }
-      it('should return ancestor_resource.id') { should match_array [ancestor_resource.id] }
+
+      it('should return ancestor_resource') { should match_array [ancestor_resource] }
     end
 
-    context 'when given ancestor_resource is the parent of node' do
+    context 'when ancestor_resource is the parent of the node' do
       let(:ancestor_resource) { project1 }
-      it 'should return all the resources which belongs_to the ancestor_resource' do
-        should match_array [ticket1.id, ticket12.id]
+      it 'should return all the resources that belongs_to the ancestor_resource' do
+        should match_array [ticket1, ticket2]
       end
     end
 
+    context 'when ancestor_resource is the grand parent of the node' do
+      let(:ancestor_resource) { organization1 }
+      it 'should return all the resources that eventually belongs to the grand parent' do
+        should match_array [ticket1, ticket2, ticket3]
+      end
+    end
+
+    context 'when ancestor_resource is an ancestor of the node' do
+      let(:ancestor_resource) { government1 }
+      it 'should return all the resources that eventually belongs to that ancestor' do
+        should match_array [ticket1, ticket2, ticket3, ticket4]
+      end
+    end
+
+    context 'when ancestor_resource is nil' do
+      let(:ancestor_resource) { nil }
+      it 'should return all existing resources' do
+        should match_array [ticket1, ticket2, ticket3, ticket4, ticket5]
+      end
+    end
+  end
+
+  describe '#related_resource?' do
+    subject { ticket_node.related_resource?(source_resource, target_resource) }
   end
   
 end
