@@ -7,6 +7,8 @@ def setup_mock_permission_hierarchy
   let(:proejct_profile_node) { SuperRole::PermissionHierarchyNode.new('ProjectProfile', parent: project_node) }
   let(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket', parent: project_node) }
 
+  let!(:user) { User.create! }
+
   let!(:government1) { Government.create! }
   
   let!(:organization1) { Organization.create!(government_id: government1.id) }

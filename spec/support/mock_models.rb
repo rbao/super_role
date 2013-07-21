@@ -32,6 +32,12 @@ ActiveRecord::Migration.create_table :tickets do |t|
   t.integer :proj_id
 end
 
+ActiveRecord::Migration.create_table :users do |t|
+end
+
+class User < ActiveRecord::Base
+end
+
 class Government < ActiveRecord::Base; end
 
 class Organization < ActiveRecord::Base

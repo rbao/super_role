@@ -38,7 +38,7 @@ module SuperRole
 
       # Find through heirachy
       hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
-      hierarchy.related_resource?(resource, reference, permission)
+      hierarchy.ancestor_resource?(resource, reference, permission)
     end
 
   end

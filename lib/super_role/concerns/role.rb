@@ -1,5 +1,6 @@
 module SuperRole
   module Role
+    
     extend ActiveSupport::Concern
 
     included do
@@ -44,10 +45,11 @@ module SuperRole
     end
 
     private
-      def owner_type_permitted
-        role_owner = SuperRole::RoleOwner.find(owner_type)
-        errors.add(:base, 'Owner Invalid') unless role_owner
-      end
+
+    def owner_type_permitted
+      role_owner = SuperRole::RoleOwner.find(owner_type)
+      errors.add(:base, 'Owner Invalid') unless role_owner
+    end
 
   end
 end

@@ -36,7 +36,7 @@ end
 SuperRole.define_role_owner_resource_types do
   
   owner_resource_type nil do
-    owns :all
+    owns Government
   end
 
   owner_resource_type Government do

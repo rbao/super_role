@@ -116,7 +116,7 @@ describe SuperRole::PermissionHierarchyNode do
     end
   end
 
-  describe '#find_child', :focus do
+  describe '#find_child' do
     subject { organization_node.find_child(show_project_profile) }
     
     let!(:show_project) { Permission.create!(action: 'show', resource_type: 'Project') }
@@ -141,7 +141,6 @@ describe SuperRole::PermissionHierarchyNode do
 
   describe '#possible_resources_for_ancestor_resource' do
     subject { ticket_node.possible_resources_for_ancestor_resource(ancestor_resource) }
-
     setup_mock_permission_hierarchy
 
     context 'when ancestor_resource is the same type of the node it self' do
@@ -177,10 +176,80 @@ describe SuperRole::PermissionHierarchyNode do
         should match_array [ticket1, ticket2, ticket3, ticket4, ticket5]
       end
     end
+
+    context 'when ancestor_resource is actually an descendant resource' do
+      subject { project_node.possible_resources_for_ancestor_resource(ancestor_resource) }
+      let(:ancestor_resource) { ticket1 }
+      it { should match_array [] }
+    end
+
+    context 'when ancestor_resource is nil and nil_node is the root of the hierarchy' do
+      subject { project_node.possible_resources_for_ancestor_resource(ancestor_resource) }
+      let(:ancestor_resource) { nil }
+      it { should match_array [project1, project2, project3, project4] }
+    end
+
+    context 'when ancestor_resource does not have a permission node in the hierarchy' do
+      let(:ancestor_resource) { user }
+      it { should match_array [] }
+    end
   end
 
-  describe '#related_resource?' do
-    subject { ticket_node.related_resource?(source_resource, target_resource) }
+  describe '#ancestor_resource?' do
+    subject { ticket_node.ancestor_resource?(resource, target_resource) }
+    setup_mock_permission_hierarchy
+
+    context 'when the resource directly belongs_to target_resource' do
+      let(:resource) { ticket1 }
+      let(:target_resource) { project1 }
+
+      it { should be_true }
+    end
+
+    context 'when the permission node of target_resource is the parent of the permission node of resource but
+      resource does not belongs_to target_resource' do
+      let(:resource) { ticket1 }
+      let(:target_resource) { project2 }
+
+      it { should be_false }
+    end
+
+    context 'when the resource belongs_to a resource that belongs_to target_resource' do
+      let(:resource) { ticket1 }
+      let(:target_resource) { organization1 }
+
+      it { should be_true }
+    end
+
+    context 'when the permission node of target_resource is the grand parent of the permission node of resource but
+      resource does not belongs_to a resource that belongs_to target_resource' do
+      let(:resource) { ticket1 }
+      let(:target_resource) { organization2 }
+
+      it { should be_false }
+    end
+
+    context 'when the resource belongs_to a resource that eventually belongs_to target_resource' do
+      let(:resource) { ticket1 }
+      let(:target_resource) { government1 }
+
+      it { should be_true }
+    end
+
+    context 'when the permission node of target_resource is the ancestor of the permission node of resource but
+      resource does not belongs_to a resource that eventually belongs_to target_resource' do
+      let(:resource) { ticket1 }
+      let(:target_resource) { government2 }
+
+      it { should be_false }
+    end
+
+    context 'when target_resource does not have a permission node in the hierarchy' do
+      let(:resource) { ticket1 }
+      let(:target_resource) { user }
+
+      it { should be_false }
+    end
   end
   
 end
