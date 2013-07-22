@@ -4,8 +4,9 @@ module SuperRole
 
     module ClassMethods
       def permissions
-        role_owner = SuperRole::RoleOwner.find(self)
-        role_owner.permissions
+        permission_hierarchy = SuperRole::PermissionHierarchy.find(self)
+        return permission_hierarchy.permissions if permission_hierarchy
+        []
       end
     end
   end

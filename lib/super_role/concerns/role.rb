@@ -1,9 +1,10 @@
 module SuperRole
   module Role
-    
+
     extend ActiveSupport::Concern
 
     included do
+      belongs_to :owner, polymorphic: true
       has_many :resource_permissions, class_name: SuperRole.resource_permission_class
 
       validate :owner_type_permitted
@@ -47,8 +48,8 @@ module SuperRole
     private
 
     def owner_type_permitted
-      role_owner = SuperRole::RoleOwner.find(owner_type)
-      errors.add(:base, 'Owner Invalid') unless role_owner
+      permission_hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
+      errors.add(:base, 'Owner Invalid') unless permission_hierarchy
     end
 
   end

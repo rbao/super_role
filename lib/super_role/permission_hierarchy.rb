@@ -47,7 +47,7 @@ module SuperRole
     # @return [Boolean] True if the two resources are related according to permission.
     #   Two resources are considered belongs_to each other if resource1 belongs to resource2 or
     #   resource1 belongs_to something that eventually belongs_to resource2.
-    def ancestor?(resource1, resource2, permission)
+    def ancestor_resource?(resource1, resource2, permission)
       node = find_node(permission)
       node.ancestor_resource?(resource1, resource2)
     end

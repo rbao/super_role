@@ -5,11 +5,29 @@ ActiveRecord::Migration.create_table :permissions do |t|
   t.string :resource_type
 end
 
+ActiveRecord::Migration.create_table :resource_permissions do |t|
+  t.integer :permission_id
+  t.integer :role_id
+  t.integer :resource_id
+  t.integer :reference_id
+  t.string :reference_type
+end
+
+ActiveRecord::Migration.create_table :roles do |t|
+  t.integer :owner
+  t.string :owner_type
+end
+
 class Permission < ActiveRecord::Base
   include SuperRole::Permission
 end
 
 class ResourcePermission < ActiveRecord::Base
+  include SuperRole::ResourcePermission
+end
+
+class Role < ActiveRecord::Base
+  include SuperRole::Role
 end
 
 ## Mock Models For Testing ##

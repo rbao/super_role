@@ -159,37 +159,45 @@ describe SuperRole::PermissionHierarchyNode do
 
   describe '#possible_resources_for_ancestor_resource' do
     subject { ticket_node.possible_resources_for_ancestor_resource(ancestor_resource) }
-    setup_mock_permission_hierarchy
-
+    
     context 'when ancestor_resource is the same type of the node it self' do
+      setup_permission_hierarchy_for_nil
       let(:ancestor_resource) { ticket1 }
 
       it('should return ancestor_resource') { should match_array [ancestor_resource] }
     end
 
     context 'when ancestor_resource is the parent of the node' do
+      setup_permission_hierarchy_for_nil
       let(:ancestor_resource) { project1 }
+      
       it 'should return all the resources that belongs_to the ancestor_resource' do
         should match_array [ticket1, ticket2]
       end
     end
 
     context 'when ancestor_resource is the grand parent of the node' do
+      setup_permission_hierarchy_for_nil
       let(:ancestor_resource) { organization1 }
+      
       it 'should return all the resources that eventually belongs to the grand parent' do
         should match_array [ticket1, ticket2, ticket3]
       end
     end
 
     context 'when ancestor_resource is an ancestor of the node' do
+      setup_permission_hierarchy_for_nil
       let(:ancestor_resource) { government1 }
+      
       it 'should return all the resources that eventually belongs to that ancestor' do
         should match_array [ticket1, ticket2, ticket3, ticket4]
       end
     end
 
     context 'when ancestor_resource is nil' do
+      setup_permission_hierarchy_for_nil
       let(:ancestor_resource) { nil }
+      
       it 'should return all existing resources' do
         should match_array [ticket1, ticket2, ticket3, ticket4, ticket5]
       end
@@ -197,25 +205,39 @@ describe SuperRole::PermissionHierarchyNode do
 
     context 'when ancestor_resource is actually an descendant resource' do
       subject { project_node.possible_resources_for_ancestor_resource(ancestor_resource) }
+      setup_permission_hierarchy_for_nil
       let(:ancestor_resource) { ticket1 }
+
       it { should match_array [] }
     end
 
     context 'when ancestor_resource is nil and nil_node is the root of the hierarchy' do
       subject { project_node.possible_resources_for_ancestor_resource(ancestor_resource) }
+      setup_permission_hierarchy_for_nil
       let(:ancestor_resource) { nil }
+      
       it { should match_array [project1, project2, project3, project4] }
     end
 
+    context 'when ancestor_resource is nil but nil_node is not the root of the hierarchy' do
+      subject { project_node.possible_resources_for_ancestor_resource(ancestor_resource) }
+      setup_permission_hierarchy_for_government
+      let(:ancestor_resource) { nil }
+      
+      it { should match_array [] }
+    end
+
     context 'when ancestor_resource does not have a permission node in the hierarchy' do
+      setup_permission_hierarchy_for_nil
       let(:ancestor_resource) { user }
+
       it { should match_array [] }
     end
   end
 
   describe '#ancestor_resource?' do
     subject { ticket_node.ancestor_resource?(resource, target_resource) }
-    setup_mock_permission_hierarchy
+    setup_permission_hierarchy_for_nil
 
     context 'when the resource directly belongs_to target_resource' do
       let(:resource) { ticket1 }

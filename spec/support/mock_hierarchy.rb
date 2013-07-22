@@ -1,12 +1,31 @@
-def setup_mock_permission_hierarchy
+def setup_permission_hierarchy_for_nil
 
-  let(:nil_node) { SuperRole::PermissionHierarchyNode.new('') }
-  let(:government_node) { SuperRole::PermissionHierarchyNode.new('Government', parent: nil_node) }
-  let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization', parent: government_node) }
-  let(:project_node) { SuperRole::PermissionHierarchyNode.new('Project', parent: organization_node, polymorphic: true, foreign_key: :owner_id) }
-  let(:proejct_profile_node) { SuperRole::PermissionHierarchyNode.new('ProjectProfile', parent: project_node) }
-  let(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket', parent: project_node) }
+  let!(:hierarchy) { SuperRole::PermissionHierarchy.create(nil) }
 
+  let!(:nil_node) { hierarchy.root }
+  let!(:government_node) { SuperRole::PermissionHierarchyNode.new('Government', parent: nil_node) }
+  let!(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization', parent: government_node) }
+  let!(:project_node) { SuperRole::PermissionHierarchyNode.new('Project', parent: organization_node, polymorphic: true, foreign_key: :owner_id) }
+  let!(:proejct_profile_node) { SuperRole::PermissionHierarchyNode.new('ProjectProfile', parent: project_node) }
+  let!(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket', parent: project_node) }
+
+  setup_resources
+end
+
+def setup_permission_hierarchy_for_government
+
+  let!(:hierarchy) { SuperRole::PermissionHierarchy.create('Government') }
+
+  let!(:government_node) { hierarchy.root }
+  let!(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization', parent: government_node) }
+  let!(:project_node) { SuperRole::PermissionHierarchyNode.new('Project', parent: organization_node, polymorphic: true, foreign_key: :owner_id) }
+  let!(:proejct_profile_node) { SuperRole::PermissionHierarchyNode.new('ProjectProfile', parent: project_node) }
+  let!(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket', parent: project_node) }
+
+  setup_resources
+end
+
+def setup_resources
   let!(:user) { User.create! }
 
   let!(:government1) { Government.create! }

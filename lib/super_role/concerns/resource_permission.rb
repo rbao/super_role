@@ -1,22 +1,26 @@
 module SuperRole
-  module ActiveRecordExtension
+  module ResourcePermission
     extend ActiveSupport::Concern
 
     included do
       belongs_to :role, class_name: SuperRole.role_class
       belongs_to :permission, class_name: SuperRole.permission_class
+      belongs_to :reference, polymorphic: true
+
+      validates :role_id, presence: true
+      validates :permission_id, presence: true
     end
 
     module ClassMethods
-      def self.related_to(actions, resource)
+      def related_to(actions, resource)
         # resource_permission with no resource_id means either it is a permission for all the 
         # resource relative to the reference or it is an action which does not require a 
         # resource_id, ex. :create.
-        joins(:permission).where(permission: { action: actions, resource_type: resource.class }, resource_id: [nil, resource.id].uniq)
+        joins(:permission).where(SuperRole.permission_class.table_name => { action: actions, resource_type: resource.class }, resource_id: [nil, resource.id].uniq)
       end
 
-      def self.with_resource_type(actions, resource_type)
-        joins(:permission).where(permission: { action: actions, resource_type: resource_type }, resource_id: nil)
+      def with_resource_type(actions, resource_type)
+        joins(:permission).where(permissions: { action: actions, resource_type: resource_type }, resource_id: nil)
       end
     end
 
@@ -38,7 +42,8 @@ module SuperRole
 
       # Find through heirachy
       hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
-      hierarchy.ancestor_resource?(resource, reference, permission)
+      return hierarchy.ancestor_resource?(resource, reference, permission) if hierarchy
+      false
     end
 
   end
