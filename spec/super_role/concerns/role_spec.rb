@@ -37,8 +37,4 @@ describe SuperRole::Role do
       end
     end
   end
-
-  describe '#has_permission_to?' do
-    
-  end
 end

@@ -31,17 +31,26 @@ module SuperRole
     def has_permission_to?(actions, resource)
       actions = Array(actions)
       related_resource_permissions = resource_permissions.related_to(actions, resource)
-      
+
       related_resource_permissions.each do |rp|
         return true if rp.include_resource?(resource)
       end
+      false
+    end
+
+    def permission_hierarchy
+      if @permission_hierarchy && @permission_hierarchy.resource_type == owner_type
+        return @permission_hierarchy 
+      end
+
+      @permission_hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
+      @permission_hierarchy
     end
 
     private
 
     def owner_type_permitted
-      permission_hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
-      errors.add(:base, 'Owner Invalid') unless permission_hierarchy
+      errors.add(:owner, 'Owner Invalid') unless permission_hierarchy
     end
 
     def resourcify(resource_or_resource_type)

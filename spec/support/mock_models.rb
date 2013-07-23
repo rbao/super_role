@@ -14,7 +14,7 @@ ActiveRecord::Migration.create_table :resource_permissions do |t|
 end
 
 ActiveRecord::Migration.create_table :roles do |t|
-  t.integer :owner
+  t.integer :owner_id
   t.string :owner_type
 end
 

@@ -67,10 +67,12 @@ module SuperRole
     end
 
     def ancestor_resource?(resource, target_resource)
+      return true if parent.resource_type.blank? && target_resource.nil?
+
       possible_parent_resource_ids = parent.possible_ids_for_ancestor_resource(target_resource)
       parent_resource_id = resource.send(parent_foreign_key)
-
       return true if possible_parent_resource_ids.include?(parent_resource_id)
+      
       false
     end
 

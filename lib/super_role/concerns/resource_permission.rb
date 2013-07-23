@@ -9,6 +9,8 @@ module SuperRole
 
       validates :role_id, presence: true
       validates :permission_id, presence: true
+      validates :resource_id, uniqueness: { scope: [:permission_id, :role_id] }
+      validate :permission_valid_for_role
     end
 
     module ClassMethods
@@ -34,16 +36,30 @@ module SuperRole
 
     # @param [#persisted?#id] name_and_desc
     def include_resource?(resource)
+      
       if resource.persisted?
         return true if resource.id == resource_id
-      else
-        return false
       end
 
       # Find through heirachy
-      hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
-      return hierarchy.ancestor_resource?(resource, reference, permission) if hierarchy
+      return permission_hierarchy.ancestor_resource?(resource, reference, permission) if permission_hierarchy
       false
+    end
+
+    def permission_hierarchy
+      if @permission_hierarchy && @permission_hierarchy.resource_type == owner_type
+        return @permission_hierarchy 
+      end
+
+      @permission_hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
+      @permission_hierarchy
+    end
+
+    private
+
+    def permission_valid_for_role
+      errors.add(:permission, 'This permission cannot be added to the role1') unless permission_hierarchy
+      errors.add(:permission, 'This permission cannot be added to the role2') unless permission_hierarchy.find_node(permission)
     end
 
   end
