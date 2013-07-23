@@ -11,32 +11,24 @@ module SuperRole
     end
 
     def can?(action, resource_or_resource_type)
-      # Do we really nee this check?
-      return false unless SuperRole::RoleOwner(owner).owns?(resource)
-
       resource = resourcify(resource_or_resource_type)
       resource_type = resource_type
 
-      group = ActionGroup.find(action, resource_type)
-      action_alias = ActionAlias.find(action, resource_type)
-      
-      if group
-        actions_to_check = group.actions
-      elsif action_alias
-        actions_to_check = [action_alias.action]
+      actions_from_group = find_actions_for_group(action, resource_type)
+      action_from_alias = find_action_for_alias(action, resource_type)
+
+      if actions_from_group.any?
+        actions_to_check = actions_from_group
+      elsif action_from_alias
+        actions_to_check = [action_from_alias]
       else
         actions_to_check = [action]
       end
 
-      has_permission?(actions_to_check, resource)
+      has_permission_to?(actions_to_check, resource)
     end
 
-    def resourcify(resource_or_resource_type)
-      return resource_or_resource_type.new if resource_or_resource_type.class == Class
-      resource_or_resource_type
-    end
-
-    def has_permission?(actions, resource)
+    def has_permission_to?(actions, resource)
       actions = Array(actions)
       related_resource_permissions = resource_permissions.related_to(actions, resource)
       
@@ -50,6 +42,27 @@ module SuperRole
     def owner_type_permitted
       permission_hierarchy = SuperRole::PermissionHierarchy.find(owner_type)
       errors.add(:base, 'Owner Invalid') unless permission_hierarchy
+    end
+
+    def resourcify(resource_or_resource_type)
+      if resource_or_resource_type.is_a?(String)
+        resource_or_resource_type = resource_or_resource_type.constantize
+      end
+
+      return resource_or_resource_type.new if resource_or_resource_type.class == Class
+      resource_or_resource_type
+    end
+
+    def find_actions_for_group(action, resource_type)
+      group = ActionGroup.find(action, resource_type)
+      return group.actions if group
+      []
+    end
+
+    def find_action_for_alias(action, resource_type)
+      action_alias = ActionAlias.find(action, resource_type)
+      return action_alias.action if action_alias
+      nil
     end
 
   end

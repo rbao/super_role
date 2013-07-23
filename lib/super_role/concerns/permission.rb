@@ -12,8 +12,9 @@ module SuperRole
     alias_method :eql?, :==
 
     protected
-      def state
-        [action.to_s, resource_type.to_s]
-      end
+    
+    def state
+      [action.to_s, resource_type.to_s]
+    end
   end
 end

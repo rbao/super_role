@@ -51,7 +51,7 @@ ActiveRecord::Migration.create_table :employee_profiles do |t|
   t.integer :employee_id
 end
 
-ActiveRecord::Migration.create_table :employee_status do |t|
+ActiveRecord::Migration.create_table :employee_statuses do |t|
   t.integer :employee_id
 end
 
