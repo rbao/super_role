@@ -3,7 +3,7 @@ require 'spec_helper'
 class Project; end
 class Contact; end
 
-describe 'DSL for SuperRole.define_permissions' do
+describe 'SuperRole.define_permissions' do
 
   let(:default_actions) { SuperRole::PermissionDefiner.new.default_actions }
   let(:action_groups) { SuperRole::ActionGroup.all }
@@ -11,7 +11,6 @@ describe 'DSL for SuperRole.define_permissions' do
   let(:contact_permissions) { Permission.where(resource_type: Contact) }
 
   describe 'one line definition' do
-
     describe 'for a single class with no options' do
       before do
         SuperRole.define_permissions do
@@ -75,13 +74,11 @@ describe 'DSL for SuperRole.define_permissions' do
         contact_permissions.map(&:action).should match_array default_actions + ['action1', 'action2']
       end
     end
-
   end
   
   describe 'multi-line definition' do
-    
     describe 'with action_group' do
-      it 'should creat the new ActionGroup instance' do
+      it 'should create the new ActionGroup instance' do
         SuperRole.define_permissions do
           define_permissions_for [Project, Contact] do
             action_group :manage, [:update, :destroy]
@@ -94,7 +91,7 @@ describe 'DSL for SuperRole.define_permissions' do
     end
 
     describe 'with action_alias' do
-      it 'should creat the new ActionAlias instance' do
+      it 'should create the new ActionAlias instance' do
         SuperRole.define_permissions do
           define_permissions_for [Project, Contact] do
             action_alias [:delete, :remove], :destroy
@@ -105,7 +102,6 @@ describe 'DSL for SuperRole.define_permissions' do
         SuperRole::ActionAlias.find('remove', 'Contact').action.should eq 'destroy'
       end
     end
-
   end
 
 end

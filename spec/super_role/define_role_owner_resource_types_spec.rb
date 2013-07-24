@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'DSL for SuperRole.define_role_owner' do
+describe 'SuperRole.define_role_owner_resource_types' do
   
   describe 'one line definition' do
     let!(:update_organization) { Permission.create!(action: 'update', resource_type: 'Organization') }
