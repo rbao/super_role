@@ -10,27 +10,27 @@ module SuperRole
       validate :owner_type_permitted
     end
 
-    def can?(action, resource_or_resource_type)
+    def can?(actions, resource_or_resource_type, options = {})
       resource = resourcify(resource_or_resource_type)
-      resource_type = resource_type
+      resource_type = resource.class
+      any = !!options[:any]
 
-      actions_from_group = find_actions_for_group(action, resource_type)
-      action_from_alias = find_action_for_alias(action, resource_type)
+      actions = extract_actual_actions(actions, resource_type)
 
-      if actions_from_group.any?
-        actions_to_check = actions_from_group
-      elsif action_from_alias
-        actions_to_check = [action_from_alias]
-      else
-        actions_to_check = [action]
+      actions.each do |action|
+        if any
+          return true if has_permission_to?(action, resource)
+        else
+          return false unless has_permission_to?(action, resource)
+        end
       end
 
-      has_permission_to?(actions_to_check, resource)
+      return true unless any
+      false
     end
 
-    def has_permission_to?(actions, resource)
-      actions = Array(actions)
-      related_resource_permissions = resource_permissions.related_to(actions, resource)
+    def has_permission_to?(action, resource)
+      related_resource_permissions = resource_permissions.related_to(action, resource)
 
       related_resource_permissions.each do |rp|
         return true if rp.include_resource?(resource)
@@ -51,6 +51,26 @@ module SuperRole
 
     def owner_type_permitted
       errors.add(:owner, 'Owner Invalid') unless permission_hierarchy
+    end
+
+    def extract_actual_actions(actions, resource_type)
+      actions = Array(actions)
+      actual_actions = []
+      
+      actions.each do |action|
+        actions_from_group = find_actions_for_group(action, resource_type)
+        action_from_alias = find_action_for_alias(action, resource_type)
+
+        if actions_from_group.any?
+          actual_actions += actions_from_group
+        elsif action_from_alias
+          actual_actions << action_from_alias
+        else
+          actual_actions << action
+        end
+      end
+
+      actual_actions
     end
 
     def resourcify(resource_or_resource_type)

@@ -58,11 +58,10 @@ describe SuperRole::ResourcePermission do
       let(:resource_permission) { ResourcePermission.new(resource_id: 1) }
       let(:resource) { double(:persisted? => true) }
 
-      before do
+      it do
         expect(resource).to receive(:id).and_return(1)
+        should be_true
       end
-
-      it { should be_true }
     end
 
     context 'when the resource is persisted and its id does not match resource_permission.resource_id' do
