@@ -88,7 +88,7 @@ module SuperRole
     end
 
     def existing_permissions
-      SuperRole.permission_class.all
+      SuperRole.permission_class.constantize.all
     end
 
   end

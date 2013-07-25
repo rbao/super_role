@@ -18,7 +18,7 @@ module SuperRole
         # resource_permission with no resource_id means either it is a permission for all the 
         # resource relative to the reference or it is an action which does not require a 
         # resource_id, ex. :create.
-        joins(:permission).where(SuperRole.permission_class.table_name => { action: actions, resource_type: resource.class }, resource_id: [nil, resource.id].uniq)
+        joins(:permission).where(SuperRole.permission_class.constantize.table_name => { action: actions, resource_type: resource.class }, resource_id: [nil, resource.id].uniq)
       end
 
       def with_resource_type(actions, resource_type)

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'SuperRole.define_role_owner_resource_types' do
+describe 'SuperRole.define_role_owner_permission_hierarchy' do
   
   describe 'one line definition' do
     let!(:update_organization) { Permission.create!(action: 'update', resource_type: 'Organization') }
@@ -9,7 +9,7 @@ describe 'SuperRole.define_role_owner_resource_types' do
 
     context 'with no options' do
       subject do
-        SuperRole.define_role_owner_resource_types do
+        SuperRole.define_role_owner_permission_hierarchy do
           owner_resource_type 'Organization'
         end 
       end
@@ -30,7 +30,7 @@ describe 'SuperRole.define_role_owner_resource_types' do
 
     context 'with :only options' do
       subject do
-        SuperRole.define_role_owner_resource_types do
+        SuperRole.define_role_owner_permission_hierarchy do
           owner_resource_type 'Organization', only: :update
         end
       end
@@ -44,7 +44,7 @@ describe 'SuperRole.define_role_owner_resource_types' do
 
     context 'with :only options' do
       subject do
-        SuperRole.define_role_owner_resource_types do
+        SuperRole.define_role_owner_permission_hierarchy do
           owner_resource_type 'Organization', except: :show
         end
       end
@@ -60,7 +60,7 @@ describe 'SuperRole.define_role_owner_resource_types' do
   describe 'muti-line non-nested definition' do
     subject do
 
-      SuperRole.define_role_owner_resource_types do
+      SuperRole.define_role_owner_permission_hierarchy do
         owner_resource_type Organization do
           owns Project, polymorphic: true, foreign_key: :owner_id
         end
@@ -89,7 +89,7 @@ describe 'SuperRole.define_role_owner_resource_types' do
     before do
       create_permissions_for(Organization, Project, ProjectProfile, Ticket, Employee, EmployeeStatus, EmployeeProfile)
       
-      SuperRole.define_role_owner_resource_types do
+      SuperRole.define_role_owner_permission_hierarchy do
         owner_resource_type Organization do
           
           owns Project, polymorphic: true, foreign_key: :owner_id do

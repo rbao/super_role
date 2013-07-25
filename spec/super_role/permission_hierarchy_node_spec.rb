@@ -299,7 +299,7 @@ describe SuperRole::PermissionHierarchyNode do
       it { should be_false }
     end
 
-    context 'when target_resource is nil and resource is directly under nil which has no foreign_key', :focus do
+    context 'when target_resource is nil and resource is directly under nil which has no foreign_key' do
       subject { government_node.ancestor_resource?(resource, target_resource) }
       let(:resource) { Government.new }
       let(:target_resource) { nil }

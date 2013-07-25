@@ -16,15 +16,11 @@ module SuperRole
     yield self
   end
 
-  def self.permission_class
-    @@permission_class.constantize
-  end
-
   def self.define_permissions(&block)
     PermissionDefiner.run(&block)
   end
 
-  def self.define_role_owner_resource_types(&block)
+  def self.define_role_owner_permission_hierarchy(&block)
     PermissionHierarchyDefiner.run(&block)
   end
 

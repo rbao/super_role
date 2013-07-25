@@ -13,7 +13,7 @@ describe 'given definition files' do
       define_permissions_for [Government, EmployeeProfile, EmployeeStatus], only: :update
     end
 
-    SuperRole.define_role_owner_resource_types do
+    SuperRole.define_role_owner_permission_hierarchy do
       owner_resource_type nil do
         owns User
 

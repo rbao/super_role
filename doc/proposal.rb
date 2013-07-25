@@ -33,7 +33,7 @@ SuperRole.define_permissions do
   define_permissions_for [OrganizationSetting, OrganizationProfile], only: [:update]
 end
 
-SuperRole.define_role_owner_resource_types do
+SuperRole.define_role_owner_permission_hierarchy do
   
   owner_resource_type nil do
     owns Government

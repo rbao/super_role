@@ -37,7 +37,7 @@ module SuperRole
     private
       def define_action(action)
         resource_types.each do |rt|
-          permissions << SuperRole.permission_class.new(action: action, resource_type: rt)
+          permissions << SuperRole.permission_class.constantize.new(action: action, resource_type: rt)
         end
       end
 

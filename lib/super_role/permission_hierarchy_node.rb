@@ -19,7 +19,7 @@ module SuperRole
 
       @node_permissions = []
       actions.each do |action|
-        permission = SuperRole.permission_class.find_by(action: action, resource_type: resource_type)
+        permission = permission_class.find_by(action: action, resource_type: resource_type)
         raise "Permission Not Found" unless permission
         node_permissions << permission
       end
@@ -100,7 +100,11 @@ module SuperRole
     private
 
     def default_actions
-      SuperRole.permission_class.where(resource_type: resource_type).pluck(:action)
+      permission_class.where(resource_type: resource_type).pluck(:action)
+    end
+
+    def permission_class
+      SuperRole.permission_class.constantize
     end
 
     def extract_actions_from_options(options)
