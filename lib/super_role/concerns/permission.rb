@@ -1,5 +1,6 @@
 module SuperRole
   module Permission
+
     extend ActiveSupport::Concern
 
     included do
@@ -16,5 +17,6 @@ module SuperRole
     def state
       [action.to_s, resource_type.to_s]
     end
+    
   end
 end

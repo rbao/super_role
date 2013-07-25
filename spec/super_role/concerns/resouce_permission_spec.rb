@@ -24,6 +24,33 @@ describe SuperRole::ResourcePermission do
     end
   end
 
+  describe 'validations' do
+    subject { resource_permission }
+    let(:resource_permission) { ResourcePermission.new }
+
+    context 'when the role does not have a corresponding permission_hierarchy' do
+      before { resource_permission.stub(:permission_hierarchy => nil) }
+      
+      it do
+        should_not be_valid
+        subject.errors.should have_key(:role)
+      end
+    end
+
+    context 'when permission is not in the role\'s permission_hierarchy' do
+      let(:permission_hierarchy) { double(:find_node => nil) }
+      before do
+        resource_permission.stub(:permission_hierarchy => permission_hierarchy)
+      end
+
+      it do
+        should_not be_valid
+        subject.errors.should_not have_key(:role)
+        subject.errors.should have_key(:permission)
+      end
+    end
+  end
+
   describe '#include_resource?' do
     subject { resource_permission.include_resource?(resource) }
     
