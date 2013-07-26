@@ -1,7 +1,7 @@
 module SuperRole
   class PermissionHierarchyNode
     
-    include DslNormalizationHelper
+    include InputNormalizationHelper
 
     attr_reader :children, :parent, :resource_type, :parent_foreign_key, :polymorphic, :actions, :node_permissions
 

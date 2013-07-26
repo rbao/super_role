@@ -1,7 +1,7 @@
 module SuperRole
   class PermissionDefinition
 
-    include DslNormalizationHelper
+    include InputNormalizationHelper
 
     attr_reader :resource_types, :permissions
 

@@ -26,7 +26,7 @@ module SuperRole
 
 end
 
-require 'super_role/concerns/dsl_normalization_helper'
+require 'super_role/concerns/input_normalization_helper'
 
 require 'super_role/action_group'
 require 'super_role/action_alias'

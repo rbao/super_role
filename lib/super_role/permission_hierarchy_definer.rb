@@ -1,7 +1,7 @@
 module SuperRole
   class PermissionHierarchyDefiner
     
-    include DslNormalizationHelper
+    include InputNormalizationHelper
 
     def self.run(&block)
       definer = new

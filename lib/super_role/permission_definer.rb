@@ -8,7 +8,7 @@ module SuperRole
   # file. 
   class PermissionDefiner
 
-    include DslNormalizationHelper
+    include InputNormalizationHelper
 
     attr_accessor :definitions
 

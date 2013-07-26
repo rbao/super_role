@@ -1,5 +1,5 @@
 module SuperRole
-  module DslNormalizationHelper
+  module InputNormalizationHelper
     extend ActiveSupport::Concern
 
     private
