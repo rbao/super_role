@@ -49,17 +49,6 @@ module SuperRole
       definitions << definition
     end
 
-    def extract_actions_from_options(options)
-      extra = arrayify_then_stringify_items(options[:extra])
-      only = arrayify_then_stringify_items(options[:only])
-      except = arrayify_then_stringify_items(options[:except])
-
-      actions = only.any? ? only : default_actions
-      actions -= except
-      actions += extra
-      actions
-    end
-
     def run_definitions!
       new_permissions = defined_permissions - existing_permissions
       new_permissions.each { |p| p.save! }
@@ -89,6 +78,19 @@ module SuperRole
 
     def existing_permissions
       SuperRole.permission_class.constantize.all
+    end
+
+    private
+
+    def extract_actions_from_options(options)
+      extra = arrayify_then_stringify_items(options[:extra])
+      only = arrayify_then_stringify_items(options[:only])
+      except = arrayify_then_stringify_items(options[:except])
+
+      actions = only.any? ? only : default_actions
+      actions -= except
+      actions += extra
+      actions
     end
 
   end
