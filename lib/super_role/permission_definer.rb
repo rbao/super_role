@@ -49,9 +49,12 @@ module SuperRole
       definitions << definition
     end
 
+    def run_definitions
+      definitions.each { |d| d.save }
+    end
+
     def run_definitions!
-      new_permissions = defined_permissions - existing_permissions
-      new_permissions.each { |p| p.save! }
+      definitions.each { |d| d.save! }
     end
 
     def defined_permissions

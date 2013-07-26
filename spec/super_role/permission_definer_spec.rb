@@ -5,7 +5,7 @@ describe SuperRole::PermissionDefiner do
   let(:definer) { SuperRole::PermissionDefiner.new }
   let(:default_actions) { definer.default_actions }
 
-  describe '#define_permissions_for', :focus do
+  describe '#define_permissions_for' do
     # Can't use a double here because .and_call_original method won't work, but we need
     # that to test if instance_eval is triggered the right number of times.
     let(:definition) { SuperRole::PermissionDefinition.new([]) }
@@ -70,7 +70,7 @@ describe SuperRole::PermissionDefiner do
       let(:resource_types) { [Organization, 'Project'] }
       let(:block) { proc {  } }
 
-      it 'should evaulate the block at the definition level' do
+      it 'should evaulate the block at the definition instance' do
         expect(SuperRole::PermissionDefinition).to receive(:new).and_return(definition)
         expect(definition).to receive(:instance_eval)
         expect(definition).to receive(:instance_eval).with(&block)

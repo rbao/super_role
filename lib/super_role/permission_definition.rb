@@ -28,10 +28,20 @@ module SuperRole
       ActionAlias.create(aliases, action, resource_types)
     end
 
+    # @param [Array<String, Stymbol>]
     def actions(actions)
       actions.each do |a|
         define_action(a)
       end
+      nil
+    end
+
+    def save
+      permissions.each { |p| p.save }
+    end
+
+    def save!
+      permissions.each { |p| p.save! }
     end
 
     private
