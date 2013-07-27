@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.summary     = "Provide roles and permissions."
   s.description = "Provide roles and permissions."
 
-  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
+  s.files = Dir["{lib}/**/*", "Rakefile", "README.rdoc"]
   s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "activerecord", "~> 4.0.0"
