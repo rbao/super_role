@@ -5,11 +5,7 @@ SimpleCov.start do
 end
 
 require 'super_role'
-require 'support/super_role_config'
-require 'support/active_record'
-require 'support/mock_models'
-require 'support/mock_hierarchy'
-require 'support/create_permissions'
+Dir[File.expand_path('../support/**/*.rb', __FILE__)].each { |file| require file }
 
 
 # Rspec Config
