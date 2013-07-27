@@ -5,48 +5,67 @@ describe SuperRole::PermissionHierarchyNode do
   describe '#initialize' do
     subject { SuperRole::PermissionHierarchyNode.new(resource_type, options) }
     let(:resource_type) { 'Organization' }
-    let!(:show_organization) { Permission.create!(action: 'show', resource_type: 'Organization') }
-    let!(:update_organization) { Permission.create!(action: 'update', resource_type: 'Organization') }
-    let!(:destroy_organization) { Permission.create!(action: 'destroy', resource_type: 'Organization') }
     
-    context 'with no options' do
-      let(:options) { {} }
-      
+    context 'when no options given' do
+      subject { SuperRole::PermissionHierarchyNode.new(resource_type) }
+      let(:permission1) { double('permission1') } 
+      let(:permission2) { double('permission2') }
+
+      before do
+        Permission.stub(:find_by).and_return(permission1, permission2)
+        SuperRole::PermissionHierarchyNode.any_instance.stub(:default_actions).and_return(['action1', 'action2'])
+      end
+
       it 'should add all the actions of the resource_type to the node' do
-        subject.node_permissions.should match_array [show_organization, update_organization, destroy_organization]
+        subject.node_permissions.should match_array [permission1, permission2]
       end
 
       its(:children) { should eq [] }
-      its(:parent) { should be_nil }
       its(:resource_type) { should eq 'Organization' }
     end
 
-    context 'with :only option' do
-      let(:options) { { only: :update } }
+    context 'when given :only option' do
+      let(:options) { { only: ['action1', :action2] } }
+      let(:permission1) { double('permission1') } 
+      let(:permission2) { double('permission2') }
+      let(:permission3) { double('permission3') }
+
+      before do
+        Permission.stub(:find_by).and_return(permission1, permission2, permission3)
+        SuperRole::PermissionHierarchyNode.any_instance.stub(:default_actions).and_return(['action1', 'action2', 'action3'])
+      end
       
-      it 'should add only the specified actions' do
-        subject.node_permissions.should match_array [update_organization]
+      it 'should add only add the specified by the :only option' do
+        subject.node_permissions.should match_array [permission1, permission2]
       end
     end
 
-    context 'with :except option' do
-      let(:options) { { except: ['update'] } }
+    context 'when given :except option' do
+      let(:options) { { except: ['action3'] } }
+      let(:permission1) { double('permission1') } 
+      let(:permission2) { double('permission2') }
+      let(:permission3) { double('permission3') }
+
+      before do
+        Permission.stub(:find_by).and_return(permission1, permission2, permission3)
+        SuperRole::PermissionHierarchyNode.any_instance.stub(:default_actions).and_return(['action1', 'action2', 'action3'])
+      end
       
       it 'should add all the actions except of the one specified' do
-        subject.node_permissions.should match_array [show_organization, destroy_organization]
+        subject.node_permissions.should match_array [permission1, permission2]
       end 
     end
 
-    context 'with :parent option' do
-      let(:parent) { SuperRole::PermissionHierarchyNode.new('Government') }
+    context 'when given :parent option' do
+      let(:parent) { double(:resource_type => 'SomeType') }
       let(:options) { { parent: parent} }
 
       its(:parent) { should eq parent }
-      its(:parent_foreign_key) { should eq 'government_id' }
+      its(:parent_foreign_key) { should eq 'some_type_id' }
     end
 
-    context 'with :foreign_key option' do
-      let(:parent) { SuperRole::PermissionHierarchyNode.new('Government') }
+    context 'when given :foreign_key option' do
+      let(:parent) { double('parent') }
       let(:options) { { foreign_key: 'g_id'} }
 
       it 'should set the parent to the given one' do
@@ -54,8 +73,8 @@ describe SuperRole::PermissionHierarchyNode do
       end
     end
 
-    context 'with :polymorphic option and :foreign_key option' do
-      let(:parent) { SuperRole::PermissionHierarchyNode.new('Organization') }
+    context 'when given :polymorphic option and :foreign_key option' do
+      let(:parent) { double('parent') }
       let(:options) { { polymorphic: true, foreign_key: 'owner_id'} }
 
       it 'should set the polymorphic attribute' do
@@ -63,97 +82,82 @@ describe SuperRole::PermissionHierarchyNode do
       end
     end
 
-    context 'with :polymorphic option but no :foreign_key option' do
-      let(:parent) { SuperRole::PermissionHierarchyNode.new('Organization') }
-      let(:options) { { polymorphic: true, foreign_key: 'owner_id'} }
+    context 'when given :polymorphic option but no :foreign_key option' do
+      let(:parent) { double('parent') }
+      let(:options) { { polymorphic: true } }
 
       it 'should raise error' do
-        pending
+        expect { subject }.to raise_error(SuperRole::ForeignKeyRequiredForPolymorphicNode)
       end
     end
-
   end
   
   describe '#owns' do
-    let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization') }
+    let(:node) { SuperRole::PermissionHierarchyNode.new('Organization') }
+    let(:child_node) { double('child_node') }
 
-    context 'with no block given' do
+    context 'when no block given' do
+      subject { node.owns('Child') }
+      
       it 'should add the given resource_type as a child node' do
-        expect do
-          organization_node.owns('Employee')  
-        end.to change { organization_node.children.count }.by(1)
-      end
-
-      it 'should create a child node with the given resource_type' do
-        organization_node.owns('Employee')
-        organization_node.children.first.resource_type.should eq 'Employee'
+        expect(SuperRole::PermissionHierarchyNode).to receive(:new).with('Child', { parent: node }).and_return(child_node)
+        expect { subject }.to change { node.children.count }.by(1)
+        node.children.should include(child_node)
       end
     end
 
-    context 'with a block which creates grand children' do
-      it 'should add the given resource_type as children' do
-        expect do
-          organization_node.owns('Employee') do
-            owns('EmployeeProfile')
-            owns('EmployeeStatus')
-          end
-        end.to change { organization_node.children.count }.by(1)
-      end
+    context 'when given some options' do
+      subject { node.owns('Child', options) }
+      let(:options) { { a: 1 } }
 
-      it 'should also add the grand children to the child' do
-        organization_node.owns('Employee') do
-          owns('EmployeeProfile')
-          owns('EmployeeStatus')
+      it 'should add the given resource_type with the options as a child node' do
+        expect(SuperRole::PermissionHierarchyNode).to receive(:new).with('Child', options.merge({ parent: node })).and_return(child_node)
+        expect { subject }.to change { node.children.count }.by(1)
+        node.children.should include(child_node)
+      end
+    end
+
+    context 'when given a block' do
+      subject { node.owns('Child', &block) }
+      let(:block) { proc { } }
+
+      it 'should evaluate the block at the child node instance' do
+        expect(SuperRole::PermissionHierarchyNode).to receive(:new).with('Child', { parent: node }).and_return(child_node)
+        expect(child_node).to receive(:instance_eval).with(&block)
+
+        expect { subject }.to change { node.children.count }.by(1)
+        node.children.should include(child_node)
+      end
+    end
+  end
+
+  describe '#find_descendant' do
+    subject { node.find_descendant(permission) }
+
+    let(:node) { SuperRole::PermissionHierarchyNode.new('Organization') }
+    let(:permission) { double('permission') }
+    
+    context 'when the node it self have the permission' do
+      before { node.stub_chain(:node_permissions, :include? => true) }
+      it { should eq node }
+    end
+
+    context 'when the node it self does not have the permission' do
+      context 'and also cannot be found from any of the node\'s children\'s descendant' do
+        before do
+          node.stub(:children => [double(:find_descendant => false)])
         end
-
-        organization_node.children.first.children.map(&:resource_type).should match_array ['EmployeeProfile', 'EmployeeStatus']
+        it { should be_nil }
       end
-    end
-  end
 
-  describe '#children_permissions' do
-    subject { organization_node.children_permissions }
-    
-    let!(:show_project) { Permission.create!(action: 'show', resource_type: 'Project') }
-    let!(:show_project_profile) { Permission.create!(action: 'show', resource_type: 'ProjectProfile') }
-    let!(:show_ticket) { Permission.create!(action: 'show', resource_type: 'Ticket') }
-    
-    let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization') }
-    let(:project_node) { SuperRole::PermissionHierarchyNode.new('Project') }
-    let(:project_profile) { SuperRole::PermissionHierarchyNode.new('ProjectProfile') }
-    let(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket') }
+      context 'but cannot be found from one of the node\'s children\'s descendant' do
+        let(:descendant_node) { double('descendant_node') }
 
-    before do
-      project_node.children << project_profile
-      project_node.children << ticket_node
-      organization_node.children << project_node
-    end
-
-    it 'should include all the permissions of the children' do
-      subject.should match_array [show_project, show_project_profile, show_ticket]
-    end
-  end
-
-  describe '#find_child' do
-    subject { organization_node.find_child(show_project_profile) }
-    
-    let!(:show_project) { Permission.create!(action: 'show', resource_type: 'Project') }
-    let!(:show_project_profile) { Permission.create!(action: 'show', resource_type: 'ProjectProfile') }
-    let!(:show_ticket) { Permission.create!(action: 'show', resource_type: 'Ticket') }
-    
-    let(:organization_node) { SuperRole::PermissionHierarchyNode.new('Organization') }
-    let(:project_node) { SuperRole::PermissionHierarchyNode.new('Project') }
-    let(:proejct_profile_node) { SuperRole::PermissionHierarchyNode.new('ProjectProfile') }
-    let(:ticket_node) { SuperRole::PermissionHierarchyNode.new('Ticket') }
-    
-    before do
-      project_node.children << proejct_profile_node
-      project_node.children << ticket_node
-      organization_node.children << project_node
-    end
-
-    it 'should return the child node that have the given permission' do
-      should eq proejct_profile_node
+        before do
+          node.stub(:children => [double(:find_descendant => descendant_node)])
+        end
+        it { should eq descendant_node }
+      end
     end
   end
 

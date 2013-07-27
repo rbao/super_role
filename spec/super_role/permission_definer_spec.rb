@@ -65,12 +65,28 @@ describe SuperRole::PermissionDefiner do
       end
     end
 
+    context 'when given :extra option' do
+      subject { definer.define_permissions_for(resource_types, options) }
+      let(:resource_types) { [Organization, 'Project'] }
+      let(:options) { { extra: [:extra1, 'extra2'] } }
+
+      it 'should add in the default actions and also the actions specified :extra option' do
+        expect(SuperRole::PermissionDefinition).to receive(:new).and_return(definition)
+
+        expect(definition).to receive(:actions).with(default_actions + ['extra1', 'extra2'])
+        expect(definition).to receive(:action_alias).with(:new, :create)
+        expect(definition).to receive(:action_alias).with(:edit, :update)
+
+        expect { subject }.to change { definer.definitions.size }.by 1
+      end
+    end
+
     context 'when given a block' do
       subject { definer.define_permissions_for(resource_types, &block) }
       let(:resource_types) { [Organization, 'Project'] }
       let(:block) { proc {  } }
 
-      it 'should evaulate the block at the definition instance' do
+      it 'should evaluate the block at the definition instance' do
         expect(SuperRole::PermissionDefinition).to receive(:new).and_return(definition)
         expect(definition).to receive(:instance_eval)
         expect(definition).to receive(:instance_eval).with(&block)

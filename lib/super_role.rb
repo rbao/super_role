@@ -26,6 +26,7 @@ module SuperRole
 
 end
 
+require 'super_role/exceptions'
 require 'super_role/concerns/input_normalization_helper'
 
 require 'super_role/action_group'

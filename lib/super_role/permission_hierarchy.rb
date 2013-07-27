@@ -41,7 +41,7 @@ module SuperRole
     end
 
     def find_node(permission)
-      root.find_child(permission)
+      root.find_descendant(permission)
     end
 
     # @return [Boolean] True if the two resources are related according to permission.

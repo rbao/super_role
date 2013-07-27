@@ -3,15 +3,15 @@ module SuperRole
     
     include InputNormalizationHelper
 
-    attr_reader :children, :parent, :resource_type, :parent_foreign_key, :polymorphic, :actions, :node_permissions
+    attr_reader :children, :parent, :resource_type, :actions, :parent_foreign_key, :polymorphic, :node_permissions
 
     # @param [String] resource_type
     # @param [Array<String>] actions
     def initialize(resource_type, options = {})
-      raise 'You must provide foreign_key if polymorphic is true' if options[:polymorphic] && !options[:foreign_key]
+      raise ForeignKeyRequiredForPolymorphicNode if options[:polymorphic] && !options[:foreign_key]
       
-      @parent = options[:parent]
       @children = []
+      @parent = options[:parent]
       @resource_type = resource_type
       @actions = extract_actions_from_options(options)
       @polymorphic = !!options[:polymorphic]
@@ -20,9 +20,14 @@ module SuperRole
       @node_permissions = []
       actions.each do |action|
         permission = permission_class.find_by(action: action, resource_type: resource_type)
-        raise "Permission Not Found" unless permission
+        raise PermissionNotFound, "The permission with action '#{action}' and resource_type '#{resource_type}' was not found" unless permission
+
         node_permissions << permission
       end
+    end
+
+    def default_actions
+      permission_class.where(resource_type: resource_type).pluck(:action)
     end
 
     # @note This is a DSL method used in the role owner definition file.
@@ -32,6 +37,7 @@ module SuperRole
       child = PermissionHierarchyNode.new(resource_type, options.merge(parent: self))
       child.instance_eval(&block) if block_given?
       children << child
+      nil
     end
 
     def permissions
@@ -42,11 +48,11 @@ module SuperRole
       children.flat_map(&:permissions)
     end
 
-    def find_child(permission)
+    def find_descendant(permission)
       return self if node_permissions.include?(permission)
       
       children.each do |child|
-        result = child.find_child(permission)
+        result = child.find_descendant(permission)
         return result if result
       end
 
@@ -99,10 +105,6 @@ module SuperRole
 
     private
 
-    def default_actions
-      permission_class.where(resource_type: resource_type).pluck(:action)
-    end
-
     def permission_class
       SuperRole.permission_class.constantize
     end
@@ -123,7 +125,7 @@ module SuperRole
       if parent && !options[:foreign_key]
         auto_foreign_key = foreign_key_for(parent.resource_type)
         return auto_foreign_key if auto_foreign_key
-        return parent.resource_type.parameterize.underscore + "_id" if parent
+        return parent.resource_type.underscore.parameterize + "_id" if parent
       end
     end
 

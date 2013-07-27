@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe SuperRole::PermissionDefinition, :focus do
+describe SuperRole::PermissionDefinition do
   let(:definition) { SuperRole::PermissionDefinition.new(['Project', 'Organization']) }
 
   describe '#actions' do
