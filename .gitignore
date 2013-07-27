@@ -1,9 +1,15 @@
 .bundle/
 .yardoc/
+
 doc/*
 !doc/proposal.rb
+
 log/*.log
+
 pkg/
+
+coverage/*
+
 spec/dummy/db/*.sqlite3
 spec/dummy/db/*.sqlite3-journal
 spec/dummy/log/*.log

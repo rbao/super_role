@@ -1,4 +1,9 @@
 require 'pry-debugger'
+require 'simplecov'
+SimpleCov.start do
+  add_filter "/spec/"
+end
+
 require 'super_role'
 require 'support/super_role_config'
 require 'support/active_record'
