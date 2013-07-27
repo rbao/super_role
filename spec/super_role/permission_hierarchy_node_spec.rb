@@ -162,10 +162,12 @@ describe SuperRole::PermissionHierarchyNode do
   end
 
   describe '#possible_resources_for_ancestor_resource' do
-    subject { ticket_node.possible_resources_for_ancestor_resource(ancestor_resource) }
+    subject { node.possible_resources_for_ancestor_resource(ancestor_resource) }
     
     context 'when ancestor_resource is the same type of the node it self' do
       setup_permission_hierarchy_for_nil
+      
+      let(:node) { ticket_node }
       let(:ancestor_resource) { ticket1 }
 
       it('should return ancestor_resource') { should match_array [ancestor_resource] }
@@ -173,6 +175,8 @@ describe SuperRole::PermissionHierarchyNode do
 
     context 'when ancestor_resource is the parent of the node' do
       setup_permission_hierarchy_for_nil
+
+      let(:node) { ticket_node }
       let(:ancestor_resource) { project1 }
       
       it 'should return all the resources that belongs_to the ancestor_resource' do
@@ -182,6 +186,8 @@ describe SuperRole::PermissionHierarchyNode do
 
     context 'when ancestor_resource is the grand parent of the node' do
       setup_permission_hierarchy_for_nil
+
+      let(:node) { ticket_node }
       let(:ancestor_resource) { organization1 }
       
       it 'should return all the resources that eventually belongs to the grand parent' do
@@ -191,6 +197,8 @@ describe SuperRole::PermissionHierarchyNode do
 
     context 'when ancestor_resource is an ancestor of the node' do
       setup_permission_hierarchy_for_nil
+
+      let(:node) { ticket_node }
       let(:ancestor_resource) { government1 }
       
       it 'should return all the resources that eventually belongs to that ancestor' do
@@ -198,8 +206,9 @@ describe SuperRole::PermissionHierarchyNode do
       end
     end
 
-    context 'when ancestor_resource is nil' do
+    context 'when ancestor_resource is nil and nil node is the root of the hierarchy' do
       setup_permission_hierarchy_for_nil
+      let(:node) { ticket_node }
       let(:ancestor_resource) { nil }
       
       it 'should return all existing resources' do
@@ -207,32 +216,28 @@ describe SuperRole::PermissionHierarchyNode do
       end
     end
 
+    context 'when ancestor_resource is nil but nil_node is not the root of the hierarchy' do
+      setup_permission_hierarchy_for_government
+
+      let(:node) { ticket_node }
+      let(:ancestor_resource) { nil }
+      
+      it { should match_array [] }
+    end
+
     context 'when ancestor_resource is actually an descendant resource' do
-      subject { project_node.possible_resources_for_ancestor_resource(ancestor_resource) }
       setup_permission_hierarchy_for_nil
+
+      let(:node) { project_node }
       let(:ancestor_resource) { ticket1 }
 
       it { should match_array [] }
     end
 
-    context 'when ancestor_resource is nil and nil_node is the root of the hierarchy' do
-      subject { project_node.possible_resources_for_ancestor_resource(ancestor_resource) }
-      setup_permission_hierarchy_for_nil
-      let(:ancestor_resource) { nil }
-      
-      it { should match_array [project1, project2, project3, project4] }
-    end
-
-    context 'when ancestor_resource is nil but nil_node is not the root of the hierarchy' do
-      subject { project_node.possible_resources_for_ancestor_resource(ancestor_resource) }
-      setup_permission_hierarchy_for_government
-      let(:ancestor_resource) { nil }
-      
-      it { should match_array [] }
-    end
-
     context 'when ancestor_resource does not have a permission node in the hierarchy' do
       setup_permission_hierarchy_for_nil
+
+      let(:node) { ticket_node }
       let(:ancestor_resource) { user }
 
       it { should match_array [] }
@@ -240,75 +245,55 @@ describe SuperRole::PermissionHierarchyNode do
   end
 
   describe '#ancestor_resource?' do
-    subject { ticket_node.ancestor_resource?(resource, target_resource) }
-    setup_permission_hierarchy_for_nil
+    subject { node.ancestor_resource?(resource, target_resource) }
+    let(:node) { SuperRole::PermissionHierarchyNode.new('Organization') }
+    let(:resource) { double('resource') }
+    let(:target_resource) { double('target_resource') }
 
-    context 'when the resource directly belongs_to target_resource' do
-      let(:resource) { ticket1 }
-      let(:target_resource) { project1 }
+    context 'when given resource and target_resource are the same' do
+      let(:target_resource) { resource }
+      it { should be_true }
+    end
+
+    context 'when the node has no parent' do
+      before do
+        node.stub(:parent).and_return(nil)
+      end
+
+      it { should be_false }
+    end
+
+    context 'when given resource is not of the same resource_type as the node' do
+      before do
+        node.stub(:parent).and_return(true)
+        allow(resource).to receive(:class).and_return('SomeType')
+      end
+
+      it { should be_false }
+    end
+
+    context 'when the resource\'s parent_foreign_key is included in the possible parent_resource_ids' do
+      before do
+        node.stub(:parent).and_return(true)
+        allow(resource).to receive(:class).and_return('Organization')
+        node.stub_chain(:parent, :possible_resources_for_ancestor_resource, :pluck).and_return([1])
+        node.stub(:parent_foreign_key).and_return('foreign_key')
+        allow(resource).to receive(:foreign_key).and_return(1)
+      end
 
       it { should be_true }
     end
 
-    context 'when the permission node of target_resource is the parent of the permission node of resource but
-      resource does not belongs_to target_resource' do
-      let(:resource) { ticket1 }
-      let(:target_resource) { project2 }
+    context 'when the resource\'s parent_foreign_key is not included in the possible parent_resource_ids' do
+      before do
+        node.stub(:parent).and_return(true)
+        allow(resource).to receive(:class).and_return('Organization')
+        node.stub_chain(:parent, :possible_resources_for_ancestor_resource, :pluck).and_return([2])
+        node.stub(:parent_foreign_key).and_return('foreign_key')
+        allow(resource).to receive(:foreign_key).and_return(1)
+      end
 
       it { should be_false }
-    end
-
-    context 'when the resource belongs_to a resource that belongs_to target_resource' do
-      let(:resource) { ticket1 }
-      let(:target_resource) { organization1 }
-
-      it { should be_true }
-    end
-
-    context 'when the permission node of target_resource is the grand parent of the permission node of resource but
-      resource does not belongs_to a resource that belongs_to target_resource' do
-      let(:resource) { ticket1 }
-      let(:target_resource) { organization2 }
-
-      it { should be_false }
-    end
-
-    context 'when the resource belongs_to a resource that eventually belongs_to target_resource' do
-      let(:resource) { ticket1 }
-      let(:target_resource) { government1 }
-
-      it { should be_true }
-    end
-
-    context 'when the permission node of target_resource is the ancestor of the permission node of resource but
-      resource does not belongs_to a resource that eventually belongs_to target_resource' do
-      let(:resource) { ticket1 }
-      let(:target_resource) { government2 }
-
-      it { should be_false }
-    end
-
-    context 'when target_resource is actually a descendant of resource' do
-      subject { project_node.ancestor_resource?(resource, target_resource) }
-      let(:resource) { project1 }
-      let(:target_resource) { ticket1 }
-
-      it { should be_false }
-    end
-
-    context 'when target_resource does not have a permission node in the hierarchy' do
-      let(:resource) { ticket1 }
-      let(:target_resource) { user }
-
-      it { should be_false }
-    end
-
-    context 'when target_resource is nil and resource is directly under nil which has no foreign_key' do
-      subject { government_node.ancestor_resource?(resource, target_resource) }
-      let(:resource) { Government.new }
-      let(:target_resource) { nil }
-
-      it { should be_true }
     end
   end
   
